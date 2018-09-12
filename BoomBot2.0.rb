@@ -4,6 +4,7 @@ require 'bundler/setup'
 # DEPENDENCIES
 require 'yaml'
 
+$dbc = {}
 $config = {}
 $prefix = File.read('currentprefix.txt').sub("\n", '')
 
@@ -11,6 +12,12 @@ if File.exist?('config.yml')
   $config = YAML.load(File.read('config.yml'))
 else
   abort 'CRIT: Missing config.yml. Aborting!'
+end
+
+if File.exists?('configdb.yml')
+  $dbc = YAML.load(File.read('configdb.yml'))
+else
+  puts "WARNING: Couldn't find configdb.yml! Is the bot properly configured?"
 end
 
 def sensure(what)
@@ -61,8 +68,40 @@ boom.message do |e|
       msg = msg.gsub('<@', '')
       msg = msg.gsub('>', '')
       msg = msg.split(' ')
-      e.respond "TICKING RESPONSE: WARNMENU FOR #{msg[0]}"
+      rm = e.respond "TICKING RESPONSE: WARNMENU FOR #{msg[0]}"
     end
+
+    if msg.start_with?('setup')
+      msg = msg.sub('setup ', '')
+      a = msg.split(' ')
+
+      $dbc[:"#{a[0]}"] = a[1]
+      rm = e.respond("**CONFIG:** Populated database element #{a[0]} with value #{a[1]}! Saving...")
+      sleep 3
+      File.open('configdb.yml', 'w') {|f| f.print YAML.dump $dbc}
+      rm.edit("**CONFIGDB UPDATED!**")
+      sleep 5
+      rm.delete
+    end
+
+=begin
+
+# Created for role assignment test
+    if msg.start_with?('tmr')
+      msg = msg.sub('tmr ', '')
+      msg = msg.sub('<@', '')
+      msg = msg.sub('>', '')
+      user = msg.to_i
+      e.server.member(user).add_role(e.server.role($dbc[:test]))
+    end
+=end
+
+    if msg.start_with?('getdb')
+      e.respond "RAW DB: #{$dbc}"
+    end
+
+
+
   end
 end
 
