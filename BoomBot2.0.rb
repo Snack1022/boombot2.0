@@ -125,11 +125,31 @@ boom.message do |e|
     if msg.start_with?('temprole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('permrole ', '').sub('<@', '').sub('>', '').split(' ')
+        time = msg[2]
         e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} to #{msg[0]} for #{msg[2]}"
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
       end
     end
+
+    if msg.start_with('roles')
+      if msg == 'roles'
+        e.respond "TICKING RESPONSE: ROLES OF #{e.user.id}"
+      else
+        msg = msg.sub('roles ', '').sub('<@', '').sub('>', '').split(' ')
+        if msg.length != 1
+          if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
+            e.respond "TICKING RESPONSE: #{msg[1]} FOR #{msg[0]}; AFFECTING #{msg[2]}"
+          else
+            e.respond 'TICKING RESPONSE: NOPERM_PERM'
+          end
+        else
+          e.respond "TICKING RESPONSE: ROLES OF #{msg[0]}"
+        end
+      end
+    end
+
+
     # # Created for role assignment test
     #     if msg.start_with?('tmr')
     #       msg = msg.sub('tmr ', '')
