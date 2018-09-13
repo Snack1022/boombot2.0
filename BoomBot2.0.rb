@@ -132,7 +132,7 @@ boom.message do |e|
       end
     end
 
-    if msg.start_with('roles')
+    if msg.start_with?('roles')
       if msg == 'roles'
         e.respond "TICKING RESPONSE: ROLES OF #{e.user.id}"
       else
