@@ -68,24 +68,63 @@ boom.message do |e|
       msg = msg.gsub('<@', '')
       msg = msg.gsub('>', '')
       msg = msg.split(' ')
-      rm = e.respond "TICKING RESPONSE: WARNMENU FOR #{msg[0]}"
+      rm = e.respond "TICKING RESPONSE: WARN #{msg[0]} FOR #{msg[1]}"
+    end
+
+    if msg.start_with?('warnlist')
+      msg = msg.sub('warnlist ', '').sub('<@', '').sub('>').to_i
+      e.respond "TICKING RESPONSE: WARN LIST FOR #{msg.to_s}"
     end
 
     if msg.start_with?('setup')
-      msg = msg.sub('setup ', '')
-      a = msg.split(' ')
 
-      $dbc[:"#{a[0]}"] = a[1]
-      rm = e.respond("**CONFIG:** Populated database element #{a[0]} with value #{a[1]}! Saving...")
-      sleep 3
-      File.open('configdb.yml', 'w') {|f| f.print YAML.dump $dbc}
-      rm.edit("**CONFIGDB UPDATED!**")
-      sleep 5
-      rm.delete
+      if $config[:owner].any? {|o| o.to_i == e.user.id.to_i }
+        msg = msg.sub('setup ', '')
+        a = msg.split(' ')
+
+        $dbc[:"#{a[0]}"] = a[1]
+        rm = e.respond("**CONFIG:** Populated database element #{a[0]} with value #{a[1]}! Saving...")
+        sleep 3
+        File.open('configdb.yml', 'w') {|f| f.print YAML.dump $dbc}
+        rm.edit("**CONFIGDB UPDATED!**")
+        sleep 5
+        rm.delete
+      else
+        e.respond "TICKING RESPONSE: NOPERM_OWNER"
+      end
     end
 
-=begin
+    if msg.start_with?('tempban')
+      if $config[:permitted].any? {|o| e.user.roles.any? {|r| r.id == o.to_i} }
+        msg = msg.sub('tempban ', '')
+        a = msg.split(' ')
+        bandur = a[0].to_i
+        banusr = a[1].sub('<@', '').sub('>', '')
+        e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr.to_s}; DURATION: #{bandur.to_s} DAYS"
+      else
+        e.respond "TICKING RESPONSE: NOPERM_PERM"
+      end
+    end
 
+    if msg.start_with?('permban')
+      if $config[:permitted].any? {|o| e.user.roles.any? {|r| r.id == o.to_i} }
+      msg = msg.sub('permban ', '')
+      banusr = msg.sub('<@', '').sub('>', '')
+      e.respond "TICKING RESPONSE: PERMABAN FOR #{banusr.to_s}"
+    else
+      e.respond "TICKING RESPONSE: NOPERM_PERM"
+    end
+    end
+
+    if msg.start_with?('permrole')
+      if $config[:permitted].any? {|o| e.user.roles.any? {|r| r.id == o.to_i} }
+      msg = msg.sub('permrole ', '').sub('<@', '').sub('>', '').split(' ')
+      e.respond "TICKING RESPONSE: ASSIGN ROLE #{msg[1]} to #{msg[0]}"
+    else
+      e.respond "TICKING RESPONSE: NOPERM_PERM"
+    end
+    end
+=begin
 # Created for role assignment test
     if msg.start_with?('tmr')
       msg = msg.sub('tmr ', '')
@@ -95,12 +134,6 @@ boom.message do |e|
       e.server.member(user).add_role(e.server.role($dbc[:test]))
     end
 =end
-
-    if msg.start_with?('getdb')
-      e.respond "RAW DB: #{$dbc}"
-    end
-
-
 
   end
 end
@@ -114,6 +147,13 @@ boom.message(start_with: 'brsetprefix ') do |e|
   else
     e.respond "**PERMISSION ERROR!**\n\nI'm sorry, #{e.user.mention}, but you don't seem to be permitted to use recovery commands!"
   end
+end
+
+boom.message(start_with: 'brgrabroles') do |e|
+  e.server.roles.each do |r|
+    puts "Role name: #{r.name} | Role ID: #{r.id}"
+  end
+  e.respond 'Please view console for details!'
 end
 
 boom.run
