@@ -64,10 +64,7 @@ boom.message do |e|
     end
 
     if msg.start_with?('warn')
-      msg = msg.sub('warn ', '')
-      msg = msg.gsub('<@', '')
-      msg = msg.delete('>')
-      msg = msg.split(' ')
+      msg = msg.sub('warn ', '').sub('<@', '').sub('>', '').split(' ')
       rm = e.respond "TICKING RESPONSE: WARN #{msg[0]} FOR #{msg[1]}"
     end
 
@@ -113,16 +110,25 @@ boom.message do |e|
         e.respond "TICKING RESPONSE: PERMABAN FOR #{banusr}"
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
-    end
+      end
     end
 
     if msg.start_with?('permrole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('permrole ', '').sub('<@', '').sub('>', '').split(' ')
-        e.respond "TICKING RESPONSE: ASSIGN ROLE #{msg[1]} to #{msg[0]}"
+        e.respond "TICKING RESPONSE: PERM ASSIGN ROLE #{msg[1]} to #{msg[0]}"
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
+      end
     end
+
+    if msg.start_with?('temprole')
+      if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
+        msg = msg.sub('permrole ', '').sub('<@', '').sub('>', '').split(' ')
+        e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} to #{msg[0]} for #{msg[2]}"
+      else
+        e.respond 'TICKING RESPONSE: NOPERM_PERM'
+      end
     end
     # # Created for role assignment test
     #     if msg.start_with?('tmr')
@@ -147,11 +153,13 @@ boom.message(start_with: 'brsetprefix ') do |e|
   end
 end
 
+=begin
+# Disabled for security purposes
 boom.message(start_with: 'brgrabroles') do |e|
   e.server.roles.each do |r|
     puts "Role name: #{r.name} | Role ID: #{r.id}"
   end
   e.respond 'Please view console for details!'
 end
-
+=end
 boom.run
