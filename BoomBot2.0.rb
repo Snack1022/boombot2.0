@@ -170,6 +170,21 @@ boom.message do |e|
       msg = 'nil'
     end
 
+    if msg.start_with?('help')
+      e.respond "**__WAIT WAIT WAIT!__** This command is going to be added when the full release comes. Here's a quick overview tho:\nCommands:
+brsetprefix n - Sets the prefix to N.
+
+# = Placeholder for prefix
+#ping - Working: Tries to calculate the Pseudo-Ping
+#warn @x y - Skeleton: Warns the user @x because of reason y
+#warnlist @x - Skeleton: Obtain a list of all warns against @x
+#setup a r - Working: Populate Database Vectors with values, ex. role IDs for later assignment.
+#tempban @x duration - Unfinished Skeleton: Tempbans user @x for duration
+#permban @x - Skeleton: Bans user @x permanently
+#permrole @x role - Skeleton: Assigns role role to @x
+#temprole @x role duration - Unfinished Skeleton: Assignes role role to @x for a limited amount of time
+#roles @x a r - Skeleton: Allows you to see others roles and with proper permission modify these."
+    end
 
     # # Created for role assignment test
     #     if msg.start_with?('tmr')
