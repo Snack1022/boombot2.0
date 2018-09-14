@@ -4,6 +4,10 @@ require 'bundler/setup'
 # DEPENDENCIES
 require 'yaml'
 
+load 'usermanager.rb'
+
+# TODO: Fix passing on MSG
+
 $dbc = {}
 $config = {}
 $prefix = File.read('currentprefix.txt').sub("\n", '')
@@ -49,6 +53,7 @@ end
 boom = Discordrb::Bot.new token: $config[:token]
 
 boom.message do |e|
+  break if e.user.bot_account == true
   msg = e.message.content
   if msg.start_with?($prefix)
     msg = msg.sub($prefix, '')
@@ -95,9 +100,13 @@ boom.message do |e|
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('tempban ', '')
         a = msg.split(' ')
-        bandur = a[0].to_i
+        if a[0].include?('h')
+          bandur = Time.now + (a[0].to_i * 3600)
+        else
+          bandur = Time.now + (a[0].to_i * 3600 * 24)
+        end
         banusr = a[1].sub('<@', '').sub('>', '')
-        e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: #{bandur} DAYS"
+        e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: UNTIL UNIX #{bandur.to_s}"
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
       end
@@ -124,12 +133,17 @@ boom.message do |e|
 
     if msg.start_with?('temprole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-        msg = msg.sub('permrole ', '').sub('<@', '').sub('>', '').split(' ')
-        time = msg[2]
-        e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} to #{msg[0]} for #{msg[2]}"
+        msg = msg.sub('temp ', '').sub('<@', '').sub('>', '').split(' ')
+        if msg[2].include?('h')
+          time = Time.now + (msg[2].to_i * 3600)
+        else
+          time = Time.now + (msg[2].to_i * 3600 * 24)
+        end
+        e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} TO #{msg[0]} UNTIL UNIX #{time.to_s}"
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
       end
+      nil
     end
 
     if msg.start_with?('roles')
