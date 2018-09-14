@@ -5,22 +5,33 @@ class User
   end
 
   def permrole(name)
-    # Add perma role
+    @roles.push([name, 'perm'])
   end
 
   def temprole(name, iDuration)
-    # Add temp role
+    @roles.push([name, iDuration])
   end
 
   def unrole(name)
-    # Remove role
+    @roles.each do |r|
+      if r[0] == name
+        @roles.delete(r)
+      end
+    end
   end
 
   def tempban(iDuration)
-    # Ban temporarily
+    @tempban = [true, iDuration]
   end
 
   def update()
-    # Return all update stats
+    # Return all updated stats
+    # TODO: PRIO1: Install Update Filter
   end
+
+  def roles()
+    return @roles
+  end
+
+
 end

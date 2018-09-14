@@ -66,6 +66,7 @@ boom.message do |e|
       else
         m.edit('', constructembed('BOOMBOT2.0 | ping', 'ff0000', "Ping calculation finished: Heartbeat was acked with `#{pingtime} ms`", e))
       end
+      msg = 'nil'
     end
 
     if msg.start_with?('warn')
@@ -76,6 +77,7 @@ boom.message do |e|
     if msg.start_with?('warnlist')
       msg = msg.sub('warnlist ', '').sub('<@', '').sub('>').to_i
       e.respond "TICKING RESPONSE: WARN LIST FOR #{msg}"
+      msg = 'nil'
     end
 
     if msg.start_with?('setup')
@@ -94,6 +96,7 @@ boom.message do |e|
       else
         e.respond 'TICKING RESPONSE: NOPERM_OWNER'
       end
+      msg = 'nil'
     end
 
     if msg.start_with?('tempban')
@@ -110,6 +113,7 @@ boom.message do |e|
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
       end
+      msg = 'nil'
     end
 
     if msg.start_with?('permban')
@@ -120,6 +124,7 @@ boom.message do |e|
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
       end
+      msg = 'nil'
     end
 
     if msg.start_with?('permrole')
@@ -129,6 +134,7 @@ boom.message do |e|
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
       end
+      msg = 'nil'
     end
 
     if msg.start_with?('temprole')
@@ -143,7 +149,7 @@ boom.message do |e|
       else
         e.respond 'TICKING RESPONSE: NOPERM_PERM'
       end
-      nil
+      msg = 'nil'
     end
 
     if msg.start_with?('roles')
@@ -161,6 +167,7 @@ boom.message do |e|
           e.respond "TICKING RESPONSE: ROLES OF #{msg[0]}"
         end
       end
+      msg = 'nil'
     end
 
 
@@ -185,6 +192,7 @@ boom.message(start_with: 'brsetprefix ') do |e|
   else
     e.respond "**PERMISSION ERROR!**\n\nI'm sorry, #{e.user.mention}, but you don't seem to be permitted to use recovery commands!"
   end
+  msg = 'nil'
 end
 
 =begin
