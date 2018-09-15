@@ -1,7 +1,9 @@
 class User
-  def initialize()
+  def initialize(id)
+    @userid = id # For DB reasons
     @roles = []
     @tempban = [false, Time.now.to_i - 100]
+    @lastupdatestat = [@roles, @tempban]
   end
 
   def permrole(name)
@@ -24,14 +26,18 @@ class User
     @tempban = [true, iDuration]
   end
 
-  def update()
-    # Return all updated stats
-    # TODO: PRIO1: Install Update Filter
-  end
-
   def roles()
     return @roles
   end
 
+  def banstatus()
+    return @tempban
+  end
+
+  def tempban(time)
+    @tempban = [true, time]
+  end
+
+  # Update-Method has been cancelled. Relying on set/gets now.
 
 end

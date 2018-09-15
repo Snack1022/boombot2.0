@@ -10,6 +10,7 @@ load 'usermanager.rb'
 
 $dbc = {}
 $config = {}
+$db = {}
 $prefix = File.read('currentprefix.txt').sub("\n", '')
 
 if File.exist?('config.yml')
@@ -23,6 +24,13 @@ if File.exist?('configdb.yml')
 else
   puts "WARNING: Couldn't find configdb.yml! Is the bot properly configured?"
 end
+
+if File.exist?('userdb.yml')
+  $dbc = YAML.load(File.read('userdb.yml'))
+else
+  puts "WARNING: Couldn't find userdb.yml! Did we suffer a data loss?"
+end
+
 
 def sensure(what)
   abort("FAILED ensure: #{what} on $config!") if $config[:"#{what}"].nil?
@@ -219,4 +227,27 @@ boom.message(start_with: 'brgrabroles') do |e|
   e.respond 'Please view console for details!'
 end
 =end
+
+
+
+  boom.ready do
+    loop do
+      runbar = ProgressBar.create title: 'Running!', total: 600
+      60.times do
+        boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines'].sample
+        10.times {runbar.increment; sleep 1}
+      end
+      puts
+      print "Saving"
+      File.open('userdb.yml', 'w') {|f| f.puts YAML.dump $db}
+      puts "... Sucess!"
+      runbar.finish
+    end
+  end
+
+  boom.member_join do |event|
+    # Database Scan for previous entries
+    # Add roles
+  end
+
 boom.run

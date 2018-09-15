@@ -14,6 +14,7 @@ BoomBotFeatures.txt
 config.yml
 currentprefix.txt
 configdb.yml
+userdb.yml
 
 ## Specific to RubyMotion:
 .dat*
