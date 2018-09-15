@@ -6,8 +6,6 @@ require 'yaml'
 
 load 'usermanager.rb'
 
-# TODO: Fix passing on MSG
-
 $dbc = {}
 $config = {}
 $db = {}
@@ -47,6 +45,7 @@ puts 'Launching Bot...'
 # DEPENDENCIES
 require 'ruby-progressbar'
 require 'discordrb'
+require 'similar_text'
 
 def constructembed(title, color, description, author)
   embed = Discordrb::Webhooks::Embed.new
@@ -187,10 +186,10 @@ brsetprefix n - Sets the prefix to N.
 #warn @x y - Skeleton: Warns the user @x because of reason y
 #warnlist @x - Skeleton: Obtain a list of all warns against @x
 #setup a r - Working: Populate Database Vectors with values, ex. role IDs for later assignment.
-#tempban @x duration - Unfinished Skeleton: Tempbans user @x for duration
+#tempban @x duration - Skeleton: Tempbans user @x for duration
 #permban @x - Skeleton: Bans user @x permanently
 #permrole @x role - Skeleton: Assigns role role to @x
-#temprole @x role duration - Unfinished Skeleton: Assignes role role to @x for a limited amount of time
+#temprole @x role duration - Skeleton: Assignes role role to @x for a limited amount of time
 #roles @x a r - Skeleton: Allows you to see others roles and with proper permission modify these."
     end
 
