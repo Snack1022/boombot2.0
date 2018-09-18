@@ -62,6 +62,7 @@ boom = Discordrb::Bot.new token: $config[:token]
 boom.message do |e|
   break if e.user.bot_account == true
   msg = e.message.content
+  $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if ($db[:"#{e.user.id.to_s}"] == nil) # Construct User Elemements
   if msg.start_with?($prefix)
     msg = msg.sub($prefix, '')
 
@@ -76,16 +77,34 @@ boom.message do |e|
       msg = 'nil'
     end
 
-    if msg.start_with?('warn')
-      msg = msg.sub('warn ', '').sub('<@', '').sub('>', '').split(' ')
-      rm = e.respond "TICKING RESPONSE: WARN #{msg[0]} FOR #{msg[1]}"
-    end
-
     if msg.start_with?('warnlist')
-      msg = msg.sub('warnlist ', '').sub('<@', '').sub('>').to_i
-      e.respond "TICKING RESPONSE: WARN LIST FOR #{msg}"
+      msg = msg.sub('warnlist ', '').sub('<@', '').sub('>', '').to_i
+
+      uWarns = $db[:"#{msg}"].getwarns
+      if uWarns.length == 0
+        e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', 'No warns on record. All good here :slight_smile:', e))
+      else
+        # TODO: Prevent overload!
+        uWarnsProc = []
+        for i in (1..uWarns.length)
+          uWarnsProc.push("[#{i.to_s}]: " + uWarns[(i-1)])
+        end
+        e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', "Total warns on record: #{uWarns.length.to_s}\n\n#{uWarnsProc.join("\n")}", e))
+      end
+
       msg = 'nil'
     end
+
+    if msg.start_with?('warn')
+      msg = msg.sub('warn ', '').sub('<@', '').sub('>', '').split(' ')
+      warnusr = msg[0]
+      msg.delete_at(0) # Can't be included into code; returns value which should be voided
+      warnmsg = msg.join(' ')
+      $db[:"#{warnusr}"].warn(warnmsg)
+      e.channel.send_embed('', constructembed("BoomBot2.0 | Warned #{warnusr}!", '00ff00', 'DASH has been informed about this incident. A warning has been created.', e))
+      msg = 'nil'
+    end
+
 
     if msg.start_with?('setup')
 
@@ -179,7 +198,7 @@ boom.message do |e|
 
     if msg.start_with?('help')
       e.respond "**__WAIT WAIT WAIT!__** This command is going to be added when the full release comes. Here's a quick overview tho:\nCommands:
-brsetprefix n - Sets the prefix to N.
+brsetprefix n - Sets the prefix to N. | Requires Owner Perms
 
 # = Placeholder for prefix
 #ping - Working: Tries to calculate the Pseudo-Ping
@@ -227,13 +246,18 @@ boom.message(start_with: 'brgrabroles') do |e|
 end
 =end
 
-
-
   boom.ready do
+    if File.exist?('broadcast.txt')
+      # Planned to inform about updates
+
+      # Delete after broadcasting so it doesn't get broadcasted again
+      # File.delete('broadcast.txt')
+    end
+
     loop do
       runbar = ProgressBar.create title: 'Running!', total: 600
       60.times do
-        boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines'].sample
+        boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1'].sample
         10.times {runbar.increment; sleep 1}
       end
       puts

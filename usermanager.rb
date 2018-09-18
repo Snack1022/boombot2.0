@@ -2,8 +2,9 @@ class User
   def initialize(id)
     @userid = id # For DB reasons
     @roles = []
-    @tempban = [false, Time.now.to_i - 100]
+    @tempban = [false, 0]
     @lastupdatestat = [@roles, @tempban]
+    @warnings = []
   end
 
   def permrole(name)
@@ -40,4 +41,20 @@ class User
 
   # Update-Method has been cancelled. Relying on set/gets now.
 
+  def warn(msg)
+    @warnings.push(msg)
+  end
+
+  def getwarns
+    return @warnings
+  end
+
+  def undowarn(id)
+    begin
+      @warnings.delete_at(id)
+    rescue
+      return false
+    end
+    return true
+  end
 end
