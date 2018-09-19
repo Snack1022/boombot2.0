@@ -42,7 +42,7 @@ class User
   # Update-Method has been cancelled. Relying on set/gets now.
 
   def warn(msg)
-    @warnings.push(msg)
+    @warnings.push([Time.now, msg])
   end
 
   def getwarns

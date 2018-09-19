@@ -24,7 +24,7 @@ else
 end
 
 if File.exist?('userdb.yml')
-  $dbc = YAML.load(File.read('userdb.yml'))
+  $db = YAML.load(File.read('userdb.yml'))
 else
   puts "WARNING: Couldn't find userdb.yml! Did we suffer a data loss?"
 end
@@ -60,9 +60,13 @@ end
 boom = Discordrb::Bot.new token: $config[:token]
 
 boom.message do |e|
+  # TODO: Integrate error messages
+
   break if e.user.bot_account == true
   msg = e.message.content
   $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if ($db[:"#{e.user.id.to_s}"] == nil) # Construct User Elemements
+
+
   if msg.start_with?($prefix)
     msg = msg.sub($prefix, '')
 
@@ -77,6 +81,21 @@ boom.message do |e|
       msg = 'nil'
     end
 
+    if msg.start_with?('rmwarn')
+      msg = msg.sub('rmwarn <@', '').sub('>', '')
+      msg = msg.split(' ')
+      puts msg # DEBUG
+      userID = msg[0].to_i
+      warnID = msg[1].to_i - 1
+      puts "userID = #{userID.to_s}; warnID = #{warnID.to_s}"
+      if $db[:"#{userID.to_s}"].undowarn(warnID) == true
+        e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', '00ff00', "The warning has been successfully removed from <@#{userID}>!", e))
+      else
+        e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', 'ff0000', "ERROR: OutOfIndexException: <@#{userID}> does not have a warning on this index!", e))
+      end
+      msg = 'nil'
+    end
+
     if msg.start_with?('warnlist')
       msg = msg.sub('warnlist ', '').sub('<@', '').sub('>', '').to_i
 
@@ -87,7 +106,7 @@ boom.message do |e|
         # TODO: Prevent overload!
         uWarnsProc = []
         for i in (1..uWarns.length)
-          uWarnsProc.push("[#{i.to_s}]: " + uWarns[(i-1)])
+          uWarnsProc.push("#{i.to_s}): #{uWarns[(i-1)][0]}: #{uWarns[(i-1)][1]} ")
         end
         e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', "Total warns on record: #{uWarns.length.to_s}\n\n#{uWarnsProc.join("\n")}", e))
       end
