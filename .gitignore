@@ -9,6 +9,7 @@
 /test/tmp/
 /test/version_tmp/
 /tmp/
+.vscode
 
 BoomBotFeatures.txt
 config.yml

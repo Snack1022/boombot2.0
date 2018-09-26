@@ -38,6 +38,7 @@ sensure('token')
 sensure('clid')
 sensure('owner')
 sensure('permitted')
+sensure('tracked')
 
 puts 'SECURE_CONFIG_ENSURE successful!'
 puts 'Launching Bot...'
@@ -243,7 +244,7 @@ brsetprefix n - Sets the prefix to N. | Requires Owner Perms
   end
 end
 
-boom.message(start_with: 'brsetprefix ') do |e|
+boom.message(start_with: 'dbrsetprefix ') do |e|
   if $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
     a = e.message.content.sub('brsetprefix ', '')
     $prefix = a
