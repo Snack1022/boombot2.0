@@ -7,16 +7,16 @@ class User
     @warnings = []
   end
 
-  def permrole(name)
+  def permrole(serverid, name)
     @roles.push([name, 'perm'])
   end
 
-  def temprole(name, iDuration)
+  def temprole(serverid, name, iDuration)
     iDuration = iDuration * 3600 + Time.now
     @roles.push([name, iDuration])
   end
 
-  def unrole(name)
+  def unrole(serverid, name)
     @roles.each do |r|
       if r[0] == name
         @roles.delete(r)
@@ -24,9 +24,9 @@ class User
     end
   end
 
-  def tempban(iDuration)
+  def tempban(serverid, iDuration)
     iDuration = iDuration * 3600 + Time.now
-    @tempban = [true, iDuration]
+    @tempban = [true, iDuration, serverid]
   end
 
   def roles()
@@ -37,12 +37,18 @@ class User
     return @tempban
   end
 
-  def warn(msg)
-    @warnings.push([Time.now, msg])
+  def warn(msg, serverid)
+    @warnings.push([Time.now.strftime("%d/%m/%Y"), msg, serverid, @warnings.length])
   end
 
-  def getwarns
-    return @warnings
+  def getwarns(serverid)
+    arr = []
+    @warnings.each do |e|
+      if e[2] == serverid
+        arr.push e
+      end
+    end
+    return arr
   end
 
   def undowarn(id)
@@ -60,7 +66,7 @@ class User
     newr = []
     @roles.each do |r|
       if r[1] > Time.now || r[1] == 'perm'
-        newr.push
+        newr.push r
       end
     end
     requireupdate = true if newr != @roles

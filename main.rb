@@ -54,7 +54,7 @@ def constructembed(title, color, description, author)
   embed.title = title
   embed.description = description
   embed.timestamp = Time.now
-  embed.author = Discordrb::Webhooks::EmbedAuthor.new(name: "BOOMBOT2.0: Reply to #{author.user.name}", url: 'https://bit.ly/zer0bot', icon_url: author.user.avatar_url)
+  embed.author = Discordrb::Webhooks::EmbedAuthor.new(name: "BOOMBOT2.0: Reply to #{author.user.name}", url: 'https://cubuzz.de', icon_url: author.user.avatar_url)
   embed
 end
 
@@ -87,7 +87,7 @@ boom.message do |e|
       msg = msg.split(' ')
       puts msg # DEBUG
       userID = msg[0].to_i
-      warnID = msg[1].to_i - 1
+      warnID = msg[1].to_i
       puts "userID = #{userID.to_s}; warnID = #{warnID.to_s}"
       if $db[:"#{userID.to_s}"].undowarn(warnID) == true
         e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', '00ff00', "The warning has been successfully removed from <@#{userID}>!", e))
@@ -100,14 +100,17 @@ boom.message do |e|
     if msg.start_with?('warnlist')
       msg = msg.sub('warnlist ', '').sub('<@', '').sub('>', '').to_i
 
-      uWarns = $db[:"#{msg}"].getwarns
+      uWarns = $db[:"#{msg}"].getwarns(e.server.id)
       if uWarns.length == 0
         e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', 'No warns on record. All good here :slight_smile:', e))
       else
         # TODO: Prevent overload!
         uWarnsProc = []
+        # DEBUG:
+        puts uWarns
+        # DEBUG END!
         for i in (1..uWarns.length)
-          uWarnsProc.push("#{i.to_s}): #{uWarns[(i-1)][0]}: #{uWarns[(i-1)][1]} ")
+          uWarnsProc.push("#{uWarns[(i-1)][3].to_s}): #{uWarns[(i-1)][0]}: #{uWarns[(i-1)][1]}")
         end
         e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', "Total warns on record: #{uWarns.length.to_s}\n\n#{uWarnsProc.join("\n")}", e))
       end
@@ -120,8 +123,8 @@ boom.message do |e|
       warnusr = msg[0]
       msg.delete_at(0) # Can't be included into code; returns value which should be voided
       warnmsg = msg.join(' ')
-      $db[:"#{warnusr}"].warn(warnmsg)
-      e.channel.send_embed('', constructembed("BoomBot2.0 | Warned #{warnusr}!", '00ff00', 'DASH has been informed about this incident. A warning has been created.', e))
+      $db[:"#{warnusr}"].warn(warnmsg, e.server.id)
+      e.channel.send_embed('', constructembed("BoomBot2.0 | Warned #{warnusr}!", '00ff00', 'User has been warned.', e))
       msg = 'nil'
     end
 
@@ -140,7 +143,7 @@ boom.message do |e|
         sleep 5
         rm.delete
       else
-        e.respond 'TICKING RESPONSE: NOPERM_OWNER'
+        e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
       msg = 'nil'
     end
@@ -150,14 +153,14 @@ boom.message do |e|
         msg = msg.sub('tempban ', '')
         a = msg.split(' ')
         if a[0].include?('h')
-          bandur = Time.now + (a[0].to_i * 3600)
+          bandur = Time.now + (a[0].to_i)
         else
-          bandur = Time.now + (a[0].to_i * 3600 * 24)
+          bandur = Time.now + (a[0].to_i * 24)
         end
         banusr = a[1].sub('<@', '').sub('>', '')
-        e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: UNTIL UNIX #{bandur.to_s}"
+        e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: UNTIL UNIX #{bandur.to_s * 3600}"
       else
-        e.respond 'TICKING RESPONSE: NOPERM_PERM'
+        e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
       msg = 'nil'
     end
@@ -168,7 +171,7 @@ boom.message do |e|
         banusr = msg.sub('<@', '').sub('>', '')
         e.respond "TICKING RESPONSE: PERMABAN FOR #{banusr}"
       else
-        e.respond 'TICKING RESPONSE: NOPERM_PERM'
+        e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
       msg = 'nil'
     end
@@ -178,9 +181,10 @@ boom.message do |e|
         msg = msg.sub('permrole ', '').sub('<@', '').sub('>', '').split(' ')
         e.respond "TICKING RESPONSE: PERM ASSIGN ROLE #{msg[1]} to #{msg[0]}"
       else
-        e.respond 'TICKING RESPONSE: NOPERM_PERM'
+        e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
-      msg = 'nil'
+      msg = 'nil'# Database Scan for previous entries
+      # Add roles
     end
 
     if msg.start_with?('temprole')
@@ -193,7 +197,7 @@ boom.message do |e|
         end
         e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} TO #{msg[0]} UNTIL UNIX #{time.to_s}"
       else
-        e.respond 'TICKING RESPONSE: NOPERM_PERM'
+        e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
       msg = 'nil'
     end
@@ -207,7 +211,7 @@ boom.message do |e|
           if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
             e.respond "TICKING RESPONSE: #{msg[1]} FOR #{msg[0]}; AFFECTING #{msg[2]}"
           else
-            e.respond 'TICKING RESPONSE: NOPERM_PERM'
+            e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
           end
         else
           e.respond "TICKING RESPONSE: ROLES OF #{msg[0]}"
@@ -222,8 +226,8 @@ brsetprefix n - Sets the prefix to N. | Requires Owner Perms
 
 # = Placeholder for prefix
 #ping - Working: Tries to calculate the Pseudo-Ping
-#warn @x y - Skeleton: Warns the user @x because of reason y
-#warnlist @x - Skeleton: Obtain a list of all warns against @x
+#warn @x y - Working: Warns the user @x because of reason y
+#warnlist @x - Working: Obtain a list of all warns against @x
 #setup a r - Working: Populate Database Vectors with values, ex. role IDs for later assignment.
 #tempban @x duration - Skeleton: Tempbans user @x for duration
 #permban @x - Skeleton: Bans user @x permanently
@@ -246,7 +250,7 @@ end
 
 boom.message(start_with: 'dbrsetprefix ') do |e|
   if $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
-    a = e.message.content.sub('brsetprefix ', '')
+    a = e.message.content.sub('dbrsetprefix ', '')
     $prefix = a
     File.open('currentprefix.txt', 'w') { |f| f.print $prefix }
     e.respond "**WARNING!**\n__BRPREFIX__ has super-cow-permissions!\n\nThe prefix has been updated to `#{$prefix}`!\n"
@@ -280,6 +284,17 @@ end
         boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1'].sample
         10.times {runbar.increment; sleep 1}
       end
+
+      puts
+      print "Updating."
+      uupdate = []
+      $db.each do |k, v|
+        if v.update() != false
+          uupdate.push(k)
+        end
+      end
+      print '.'
+
       puts
       print "Saving"
       File.open('userdb.yml', 'w') {|f| f.puts YAML.dump $db}
@@ -288,9 +303,13 @@ end
     end
   end
 
-  boom.member_join do |event|
-    # Database Scan for previous entries
-    # Add roles
+  boom.member_join do |e|
+    if $db[:"#{e.user.id.to_s}"] == nil
+      $db[:"#{e.user.id.to_s}"] = User.new(e.user.id)
+      e.user.dm("**WELCOME!**\nWe're happy to have you arround here. Please take a look, read the rules and follow the instructions. Enjoy your stay!")
+    else
+      e.user.dm("**WELCOME BACK!**")
+    end
   end
 
 boom.run
