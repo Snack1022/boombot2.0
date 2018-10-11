@@ -10,6 +10,7 @@ $dbc = {}
 $config = {}
 $db = {}
 $prefix = File.read('currentprefix.txt').sub("\n", '')
+$reminders = []
 
 if File.exist?('config.yml')
   $config = YAML.load(File.read('config.yml'))
@@ -27,6 +28,10 @@ if File.exist?('userdb.yml')
   $db = YAML.load(File.read('userdb.yml'))
 else
   puts "WARNING: Couldn't find userdb.yml! Did we suffer a data loss?"
+end
+
+if File.exist?('reminders.yml')
+  $reminders = YAML.load(File.read('reminders.yml'))
 end
 
 
@@ -107,7 +112,7 @@ boom.message do |e|
         # TODO: Prevent overload!
         uWarnsProc = []
         # DEBUG:
-        puts uWarns
+        # puts uWarns
         # DEBUG END!
         for i in (1..uWarns.length)
           uWarnsProc.push("#{uWarns[(i-1)][3].to_s}): #{uWarns[(i-1)][0]}: #{uWarns[(i-1)][1]}")
@@ -225,10 +230,10 @@ boom.message do |e|
 brsetprefix n - Sets the prefix to N. | Requires Owner Perms
 
 # = Placeholder for prefix
-#ping - Working: Tries to calculate the Pseudo-Ping
-#warn @x y - Working: Warns the user @x because of reason y
-#warnlist @x - Working: Obtain a list of all warns against @x
-#setup a r - Working: Populate Database Vectors with values, ex. role IDs for later assignment.
+#ping - Tries to calculate the Pseudo-Ping
+#warn @x y - Warns the user @x because of reason y
+#warnlist @x - Obtain a list of all warns against @x
+#setup a r - Populate Database Vectors with values, ex. role IDs for later assignment.
 #tempban @x duration - Skeleton: Tempbans user @x for duration
 #permban @x - Skeleton: Bans user @x permanently
 #permrole @x role - Skeleton: Assigns role role to @x
@@ -245,6 +250,27 @@ brsetprefix n - Sets the prefix to N. | Requires Owner Perms
     #       e.server.member(user).add_role(e.server.role($dbc[:test]))
     #     end
 
+    if msg.start_with?('remind')
+      msg = msg.gsub('remind ', '')
+      txt = msg.split(' ')
+      time = txt.shift
+      time = time.split(';')
+      target = Time.now
+      time.each do |t|
+        if t.include?('s')
+          target += t.to_i
+        elsif t.include?('m')
+          target += t.to_i * 60
+        elsif t.include?('h')
+          target += t.to_i * 60 * 60
+        elsif t.include?('d')
+          target += t.to_i * 60 * 60 * 24
+        end
+      puts "DEBUG: Remind #{txt.join(" ")} at #{target}"
+      $reminders.push([target, e.channel.id, txt.join(" ")])
+      puts "DEBUG: $reminders = #{$reminders}"
+      end
+    end
   end
 end
 
@@ -279,8 +305,8 @@ end
     end
 
     loop do
-      runbar = ProgressBar.create title: 'Running!', total: 600
-      60.times do
+      runbar = ProgressBar.create title: 'Running!', total: 120
+      12.times do
         boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1'].sample
         10.times {runbar.increment; sleep 1}
       end
@@ -296,8 +322,23 @@ end
       print '.'
 
       puts
+      print 'Running reminder tasks...'
+
+      $reminders.each do |r|
+        puts "DEBUG: Inspecting #{r}"
+        # Formatting: [Time, e.channel.id, Message]
+        if r[0] < Time.now
+          puts "#{r} is up to deploy!"
+          boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
+          $reminders.delete(r)
+        end
+      end
+
+
+      puts
       print "Saving"
       File.open('userdb.yml', 'w') {|f| f.puts YAML.dump $db}
+      File.open('reminders.yml', 'w') {|f| f.puts YAML.dump $reminders}
       puts "... Sucess!"
       runbar.finish
     end

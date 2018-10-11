@@ -16,6 +16,7 @@ config.yml
 currentprefix.txt
 configdb.yml
 userdb.yml
+reminders.yml
 
 ## Specific to RubyMotion:
 .dat*
