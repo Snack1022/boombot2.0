@@ -266,6 +266,7 @@ brsetprefix n - Sets the prefix to N. | Requires Owner Perms
         elsif t.include?('d')
           target += t.to_i * 60 * 60 * 24
         end
+      end
       puts "DEBUG: Remind #{txt.join(" ")} at #{target}"
       $reminders.push([target, e.channel.id, txt.join(" ")])
       puts "DEBUG: $reminders = #{$reminders}"
