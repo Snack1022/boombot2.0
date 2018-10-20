@@ -53,14 +53,16 @@ require 'ruby-progressbar'
 require 'discordrb'
 require 'similar_text'
 
-def constructembed(title, color, description, author)
+def constructembed(title, color, description, author = 'none')
   embed = Discordrb::Webhooks::Embed.new
   embed.color = color
   embed.title = title
   embed.description = description
   embed.timestamp = Time.now
-  embed.author = Discordrb::Webhooks::EmbedAuthor.new(name: "BOOMBOT2.0: Reply to #{author.user.name}", url: 'https://cubuzz.de', icon_url: author.user.avatar_url)
-  embed
+  if author != 'none'
+    embed.author = Discordrb::Webhooks::EmbedAuthor.new(name: "BOOMBOT2.0: Reply to #{author.user.name}", url: 'https://cubuzz.de', icon_url: author.user.avatar_url)
+  end
+    embed
 end
 
 boom = Discordrb::Bot.new token: $config[:token]
@@ -301,10 +303,10 @@ end
 
   boom.ready do
     if File.exist?('broadcast.txt')
-      # Planned to inform about updates
-
-      # Delete after broadcasting so it doesn't get broadcasted again
-      # File.delete('broadcast.txt')
+      brt = []
+      brt.each do |b|
+        boom.channel(b).send_embed('', constructembed('BoomBot2.0 | BROADCAST!', '00ff00', "#{File.read('broadcast.txt')}"))
+      end
     end
 
     loop do
