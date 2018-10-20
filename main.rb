@@ -233,12 +233,14 @@ brsetprefix n - Sets the prefix to N. | Requires Owner Perms
 #ping - Tries to calculate the Pseudo-Ping
 #warn @x y - Warns the user @x because of reason y
 #warnlist @x - Obtain a list of all warns against @x
-#setup a r - Populate Database Vectors with values, ex. role IDs for later assignment.
+#setup a r - Populate Database Vectors with values, ex. role IDs for later assignment. DEV ONLY!
 #tempban @x duration - Skeleton: Tempbans user @x for duration
 #permban @x - Skeleton: Bans user @x permanently
 #permrole @x role - Skeleton: Assigns role role to @x
 #temprole @x role duration - Skeleton: Assignes role role to @x for a limited amount of time
-#roles @x a r - Skeleton: Allows you to see others roles and with proper permission modify these."
+#roles @x a r - Skeleton: Allows you to see others roles and with proper permission modify these.
+
+A detailed documentation will be created soon."
     end
 
     # # Created for role assignment test
@@ -275,9 +277,9 @@ brsetprefix n - Sets the prefix to N. | Requires Owner Perms
   end
 end
 
-boom.message(start_with: 'dbrsetprefix ') do |e|
+boom.message(start_with: 'brsetprefix ') do |e|
   if $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
-    a = e.message.content.sub('dbrsetprefix ', '')
+    a = e.message.content.sub('brsetprefix ', '')
     $prefix = a
     File.open('currentprefix.txt', 'w') { |f| f.print $prefix }
     e.respond "**WARNING!**\n__BRPREFIX__ has super-cow-permissions!\n\nThe prefix has been updated to `#{$prefix}`!\n"
