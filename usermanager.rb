@@ -102,7 +102,7 @@ class User
   end
 
   ##
-  # Updates the userdata. Returns true if userdata needs to be updated on server.
+  # Updates the userdata. Returns true and list of changes if userdata needs to be updated on server.
   def update
     requireupdate = false
     # Check Roles
