@@ -40,7 +40,7 @@ class User
   #
   # Stalemate resolval will be implemented on BB20's side.
   def temprole(serverid, name, iDuration)
-    iDuration = iDuration * 3600 + Time.now
+    iDuration = iDuration * 3600 + Time.now.to_i
     @roles.push([serverid, name, iDuration])
   end
 
@@ -58,7 +58,7 @@ class User
   ##
   # DOC TODO:
   def tempban(serverid, iDuration)
-    iDuration = iDuration * 3600 + Time.now
+    iDuration = iDuration * 3600 + Time.now.to_i
     @tempban.push([iDuration, serverid])
   end
 
@@ -107,8 +107,9 @@ class User
     requireupdate = false
     # Check Roles
     newr = []
+    update = []
     @roles.each do |r|
-      if r[2] > Time.now || r[2] == 'perm'
+      if r[2] > Time.now.to_i || r[2] == 'perm'
         newr.push r
       end
     end
@@ -116,17 +117,26 @@ class User
       requireupdate = true 
       # Check what exactly changed, return later for performance optimization of bot.
     end
+
+    # Update only contains 'remove'-instructions.
+    update[0] = @roles - newr
+
+    # Update database
     @roles = newr
 
-    # Check bans
 
+    # Scoping
+    update[1] = []
+
+    # Check bans
     @tempban.each do |t|
       # Normally skip for performance reasons
-      if t[0] < Time.now
+      if t[0] < Time.now.to_i
         requireupdate = true
+        update[1].push(t[1])
       end
     end
 
-  return requireupdate
+    return [requireupdate, update]
   end
 end
