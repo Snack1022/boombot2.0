@@ -274,7 +274,6 @@ A detailed documentation will be created soon."
       puts "DEBUG: Remind #{txt.join(" ")} at #{target}"
       $reminders.push([target, e.channel.id, txt.join(" ")])
       puts "DEBUG: $reminders = #{$reminders}"
-      end
     end
   end
 end
