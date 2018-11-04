@@ -302,13 +302,6 @@ end
 =end
 
   boom.ready do
-    if File.exist?('broadcast.txt')
-      brt = []
-      brt.each do |b|
-        boom.channel(b).send_embed('', constructembed('BoomBot2.0 | BROADCAST!', '00ff00', "#{File.read('broadcast.txt')}"))
-      end
-    end
-
     loop do
       runbar = ProgressBar.create title: 'Running!', total: 120
       12.times do
