@@ -210,20 +210,20 @@ boom.message do |e|
     end
 
     if msg.start_with?('roles')
-      if msg == 'roles'
-        e.respond "TICKING RESPONSE: ROLES OF #{e.user.id}"
-      else
-        msg = msg.sub('roles ', '').sub('<@', '').sub('>', '').split(' ')
-        if msg.length != 1
-          if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-            e.respond "TICKING RESPONSE: #{msg[1]} FOR #{msg[0]}; AFFECTING #{msg[2]}"
-          else
-            e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
-          end
-        else
-          e.respond "TICKING RESPONSE: ROLES OF #{msg[0]}"
-        end
+      e.respond "TICKING RESPONSE: ROLES OF #{e.user.id}"
+      msg = 'nil'
+    end
+
+    if msg.start_with?('roleadd') || msg.start_with?('addrole')
+      txt = msg.sub('roleadd ', '').sub('addrole ', '').split(' ')
+      role = txt.shift
+      max = [0, 111, 'rolename']
+      e.server.roles.each do |r|
+        max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
       end
+      user = txt.shift.sub('<@', '').sub('>', '')
+      e.server.member(user.to_i).add_role(e.server.role(max[1].to_i))
+      e.channel.send_embed('', constructembed('BoomBot2.0 | roleadd', '00ff00', "The role `#{max[2]}` has been assigned to <@#{user}>. \n AutoCorrect: #{max[0].to_s}%", e))
       msg = 'nil'
     end
 
@@ -240,7 +240,8 @@ brsetprefix n - Sets the prefix to N. | Requires Owner Perms
 #permban @x - Skeleton: Bans user @x permanently
 #permrole @x role - Skeleton: Assigns role role to @x
 #temprole @x role duration - Skeleton: Assignes role role to @x for a limited amount of time
-#roles @x a r - Skeleton: Allows you to see others roles and with proper permission modify these.
+#roles @x - Skeleton: Allows you to see others roles and with proper permission modify these.
+#roleadd r @x - Adds specified role to specified user. Comes with AutoCorrect.
 
 A detailed documentation will be created soon."
     end
@@ -271,7 +272,7 @@ A detailed documentation will be created soon."
           target += t.to_i * 60 * 60 * 24
         end
       end
-      e.channel.send_embed('', constructembed('BoomBot2.0 | Reminder', '00ff00', "The reminder `#{txt.join(' ')}` has been set for #{Time.at(target).strftime('%c')}."))
+      e.channel.send_embed('', constructembed('BoomBot2.0 | Reminder', '00ff00', "The reminder `#{txt.join(' ')}` has been set for #{Time.at(target).strftime('%c')}.", e))
       puts "DEBUG: Remind #{txt.join(" ")} at #{target}"
       $reminders.push([target, e.channel.id, txt.join(" ")])
       puts "DEBUG: $reminders = #{$reminders}"
