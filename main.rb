@@ -227,6 +227,19 @@ boom.message do |e|
       msg = 'nil'
     end
 
+    if msg.start_with?('rolerm') || msg.start_with?('rmrole')
+      txt = msg.sub('rolerm ', '').sub('rmrole ', '').split(' ')
+      role = txt.shift
+      max = [0, 111, 'rolename']
+      e.server.roles.each do |r|
+        max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+      end
+      user = txt.shift.sub('<@', '').sub('>', '')
+      e.server.member(user.to_i).remove_role(e.server.role(max[1].to_i))
+      e.channel.send_embed('', constructembed('BoomBot2.0 | rolerm', '00ff00', "The role `#{max[2]}` has been removed from <@#{user}>. \n AutoCorrect: #{max[0].to_s}%", e))
+      msg = 'nil'
+    end
+
     if msg.start_with?('help')
       e.respond "**__WAIT WAIT WAIT!__** This command is going to be added when the full release comes. Here's a quick overview tho:\nCommands:
 brsetprefix n - Sets the prefix to N. | Requires Owner Perms
