@@ -271,6 +271,7 @@ A detailed documentation will be created soon."
           target += t.to_i * 60 * 60 * 24
         end
       end
+      e.channel.send_embed('', constructembed('BoomBot2.0 | Reminder', '00ff00', "The reminder `#{txt.join(' ')}` has been set for #{Time.at(target).strftime('%c')}."))
       puts "DEBUG: Remind #{txt.join(" ")} at #{target}"
       $reminders.push([target, e.channel.id, txt.join(" ")])
       puts "DEBUG: $reminders = #{$reminders}"
@@ -283,7 +284,7 @@ boom.message(start_with: 'brsetprefix ') do |e|
     a = e.message.content.sub('brsetprefix ', '')
     $prefix = a
     File.open('currentprefix.txt', 'w') { |f| f.print $prefix }
-    e.respond "**WARNING!**\n__BRPREFIX__ has super-cow-permissions!\n\nThe prefix has been updated to `#{$prefix}`!\n"
+    e.respond "**WARNING!**\n__BRSETPREFIX__ has super-cow-permissions!\n\nThe prefix has been updated to `#{$prefix}`!\n"
   else
     e.respond "**PERMISSION ERROR!**\n\nI'm sorry, #{e.user.mention}, but you don't seem to be permitted to use recovery commands!"
   end
