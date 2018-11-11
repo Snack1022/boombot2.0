@@ -13,27 +13,26 @@ $prefix = File.read('currentprefix.txt').sub("\n", '')
 $reminders = []
 
 if File.exist?('config.yml')
-  $config = YAML.load(File.read('config.yml'))
+  $config = YAML.safe_load(File.read('config.yml'))
 else
   abort 'CRIT: Missing config.yml. Aborting!'
 end
 
 if File.exist?('configdb.yml')
-  $dbc = YAML.load(File.read('configdb.yml'))
+  $dbc = YAML.safe_load(File.read('configdb.yml'))
 else
   puts "WARNING: Couldn't find configdb.yml! Is the bot properly configured?"
 end
 
 if File.exist?('userdb.yml')
-  $db = YAML.load(File.read('userdb.yml'))
+  $db = YAML.safe_load(File.read('userdb.yml'))
 else
   puts "WARNING: Couldn't find userdb.yml! Did we suffer a data loss?"
 end
 
 if File.exist?('reminders.yml')
-  $reminders = YAML.load(File.read('reminders.yml'))
+  $reminders = YAML.safe_load(File.read('reminders.yml'))
 end
-
 
 def sensure(what)
   abort("FAILED ensure: #{what} on $config!") if $config[:"#{what}"].nil?
@@ -62,7 +61,7 @@ def constructembed(title, color, description, author = 'none')
   if author != 'none'
     embed.author = Discordrb::Webhooks::EmbedAuthor.new(name: "BOOMBOT2.0: Reply to #{author.user.name}", url: 'https://cubuzz.de', icon_url: author.user.avatar_url)
   end
-    embed
+  embed
 end
 
 boom = Discordrb::Bot.new token: $config[:token]
@@ -71,9 +70,9 @@ boom.message do |e|
   # TODO: Integrate error messages
 
   break if e.user.bot_account == true
-  msg = e.message.content
-  $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if ($db[:"#{e.user.id.to_s}"] == nil) # Construct User Elemements
 
+  msg = e.message.content
+  $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if $db[:"#{e.user.id.to_s}"].nil? # Construct User Elemements
 
   if msg.start_with?($prefix)
     msg = msg.sub($prefix, '')
@@ -95,7 +94,7 @@ boom.message do |e|
       puts msg # DEBUG
       userID = msg[0].to_i
       warnID = msg[1].to_i
-      puts "userID = #{userID.to_s}; warnID = #{warnID.to_s}"
+      puts "userID = #{userID}; warnID = #{warnID}"
       if $db[:"#{userID.to_s}"].undowarn(warnID) == true
         e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', '00ff00', "The warning has been successfully removed from <@#{userID}>!", e))
       else
@@ -108,7 +107,7 @@ boom.message do |e|
       msg = msg.sub('warnlist ', '').sub('<@', '').sub('>', '').to_i
 
       uWarns = $db[:"#{msg}"].getwarns(e.server.id)
-      if uWarns.length == 0
+      if uWarns.empty?
         e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', 'No warns on record. All good here :slight_smile:', e))
       else
         # TODO: Prevent overload!
@@ -116,10 +115,10 @@ boom.message do |e|
         # DEBUG:
         # puts uWarns
         # DEBUG END!
-        for i in (1..uWarns.length)
-          uWarnsProc.push("#{uWarns[(i-1)][3].to_s}): #{uWarns[(i-1)][0]}: #{uWarns[(i-1)][1]}")
+        (1..uWarns.length).each do |i|
+          uWarnsProc.push("#{uWarns[(i - 1)][3]}): #{uWarns[(i - 1)][0]}: #{uWarns[(i - 1)][1]}")
         end
-        e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', "Total warns on record: #{uWarns.length.to_s}\n\n#{uWarnsProc.join("\n")}", e))
+        e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', "Total warns on record: #{uWarns.length}\n\n#{uWarnsProc.join("\n")}", e))
       end
 
       msg = 'nil'
@@ -134,7 +133,6 @@ boom.message do |e|
       e.channel.send_embed('', constructembed("BoomBot2.0 | Warned #{warnusr}!", '00ff00', 'User has been warned.', e))
       msg = 'nil'
     end
-
 
     if msg.start_with?('setup')
 
@@ -159,11 +157,11 @@ boom.message do |e|
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('tempban ', '')
         a = msg.split(' ')
-        if a[0].include?('h')
-          bandur = Time.now + (a[0].to_i)
-        else
-          bandur = Time.now + (a[0].to_i * 24)
-        end
+        bandur = if a[0].include?('h')
+                   Time.now + a[0].to_i
+                 else
+                   Time.now + (a[0].to_i * 24)
+                 end
         banusr = a[1].sub('<@', '').sub('>', '')
         e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: UNTIL UNIX #{bandur.to_s * 3600}"
       else
@@ -190,19 +188,19 @@ boom.message do |e|
       else
         e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
-      msg = 'nil'# Database Scan for previous entries
+      msg = 'nil' # Database Scan for previous entries
       # Add roles
     end
 
     if msg.start_with?('temprole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('temp ', '').sub('<@', '').sub('>', '').split(' ')
-        if msg[2].include?('h')
-          time = Time.now + (msg[2].to_i * 3600)
-        else
-          time = Time.now + (msg[2].to_i * 3600 * 24)
-        end
-        e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} TO #{msg[0]} UNTIL UNIX #{time.to_s}"
+        time = if msg[2].include?('h')
+                 Time.now + (msg[2].to_i * 3600)
+               else
+                 Time.now + (msg[2].to_i * 3600 * 24)
+               end
+        e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} TO #{msg[0]} UNTIL UNIX #{time}"
       else
         e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
@@ -214,29 +212,37 @@ boom.message do |e|
       msg = 'nil'
     end
 
-    if msg.start_with?('roleadd') || msg.start_with?('addrole')
-      txt = msg.sub('roleadd ', '').sub('addrole ', '').split(' ')
-      role = txt.shift
-      max = [0, 111, 'rolename']
-      e.server.roles.each do |r|
-        max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+    if msg.start_with?('roleadd', 'addrole')
+      if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
+        txt = msg.sub('roleadd ', '').sub('addrole ', '').split(' ')
+        role = txt.shift
+        max = [0, 111, 'rolename']
+        e.server.roles.each do |r|
+          max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+        end
+        user = txt.shift.sub('<@', '').sub('>', '')
+        e.server.member(user.to_i).add_role(e.server.role(max[1].to_i))
+        e.channel.send_embed('', constructembed('BoomBot2.0 | roleadd', '00ff00', "The role `#{max[2]}` has been assigned to <@#{user}>. \n AutoCorrect: #{max[0]}%", e))
+      else
+        e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
-      user = txt.shift.sub('<@', '').sub('>', '')
-      e.server.member(user.to_i).add_role(e.server.role(max[1].to_i))
-      e.channel.send_embed('', constructembed('BoomBot2.0 | roleadd', '00ff00', "The role `#{max[2]}` has been assigned to <@#{user}>. \n AutoCorrect: #{max[0].to_s}%", e))
       msg = 'nil'
     end
 
-    if msg.start_with?('rolerm') || msg.start_with?('rmrole')
-      txt = msg.sub('rolerm ', '').sub('rmrole ', '').split(' ')
-      role = txt.shift
-      max = [0, 111, 'rolename']
-      e.server.roles.each do |r|
-        max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+    if msg.start_with?('rolerm', 'rmrole')
+      if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
+        txt = msg.sub('rolerm ', '').sub('rmrole ', '').split(' ')
+        role = txt.shift
+        max = [0, 111, 'rolename']
+        e.server.roles.each do |r|
+          max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+        end
+        user = txt.shift.sub('<@', '').sub('>', '')
+        e.server.member(user.to_i).remove_role(e.server.role(max[1].to_i))
+        e.channel.send_embed('', constructembed('BoomBot2.0 | rolerm', '00ff00', "The role `#{max[2]}` has been removed from <@#{user}>. \n AutoCorrect: #{max[0]}%", e))
+      else
+        e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
-      user = txt.shift.sub('<@', '').sub('>', '')
-      e.server.member(user.to_i).remove_role(e.server.role(max[1].to_i))
-      e.channel.send_embed('', constructembed('BoomBot2.0 | rolerm', '00ff00', "The role `#{max[2]}` has been removed from <@#{user}>. \n AutoCorrect: #{max[0].to_s}%", e))
       msg = 'nil'
     end
 
@@ -286,8 +292,8 @@ A detailed documentation will be created soon."
         end
       end
       e.channel.send_embed('', constructembed('BoomBot2.0 | Reminder', '00ff00', "The reminder `#{txt.join(' ')}` has been set for #{Time.at(target).strftime('%c')}.", e))
-      puts "DEBUG: Remind #{txt.join(" ")} at #{target}"
-      $reminders.push([target, e.channel.id, txt.join(" ")])
+      puts "DEBUG: Remind #{txt.join(' ')} at #{target}"
+      $reminders.push([target, e.channel.id, txt.join(' ')])
       puts "DEBUG: $reminders = #{$reminders}"
     end
   end
@@ -305,64 +311,64 @@ boom.message(start_with: 'brsetprefix ') do |e|
   msg = 'nil'
 end
 
-=begin
-# Disabled for security purposes
-boom.message(start_with: 'brgrabroles') do |e|
-  e.server.roles.each do |r|
-    puts "Role name: #{r.name} | Role ID: #{r.id}"
+# # Disabled for security purposes
+# boom.message(start_with: 'brgrabroles') do |e|
+#   e.server.roles.each do |r|
+#     puts "Role name: #{r.name} | Role ID: #{r.id}"
+#   end
+#   e.respond 'Please view console for details!'
+# end
+
+boom.ready do
+  loop do
+    runbar = ProgressBar.create title: 'Running!', total: 120
+    12.times do
+      boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1'].sample
+      10.times { runbar.increment; sleep 1 }
+    end
+
+    puts
+    print 'Updating.'
+    uupdate = []
+    $db.each do |k, v|
+      uupdate.push(k) if v.update != false
+    end
+
+    # DEBUG:
+    puts uupdate
+
+    print '.'
+
+    puts
+    print 'Running reminder tasks...'
+
+    $reminders.each do |r|
+      puts "DEBUG: Inspecting #{r}"
+      # Formatting: [Time, e.channel.id, Message]
+      next unless r[0] < Time.now
+
+      puts "#{r} is up to deploy!"
+      boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
+      $reminders.delete(r)
+    end
+
+    puts
+    print 'Saving'
+    File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
+    File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
+    puts '... Sucess!'
+    runbar.finish
   end
-  e.respond 'Please view console for details!'
 end
-=end
 
-  boom.ready do
-    loop do
-      runbar = ProgressBar.create title: 'Running!', total: 120
-      12.times do
-        boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1'].sample
-        10.times {runbar.increment; sleep 1}
-      end
-
-      puts
-      print "Updating."
-      uupdate = []
-      $db.each do |k, v|
-        if v.update() != false
-          uupdate.push(k)
-        end
-      end
-      print '.'
-
-      puts
-      print 'Running reminder tasks...'
-
-      $reminders.each do |r|
-        puts "DEBUG: Inspecting #{r}"
-        # Formatting: [Time, e.channel.id, Message]
-        if r[0] < Time.now
-          puts "#{r} is up to deploy!"
-          boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
-          $reminders.delete(r)
-        end
-      end
-
-
-      puts
-      print "Saving"
-      File.open('userdb.yml', 'w') {|f| f.puts YAML.dump $db}
-      File.open('reminders.yml', 'w') {|f| f.puts YAML.dump $reminders}
-      puts "... Sucess!"
-      runbar.finish
-    end
+boom.member_join do |e|
+  if $db[:"#{e.user.id.to_s}"].nil? # Database: Check whether user did join server already.
+    $db[:"#{e.user.id.to_s}"] = User.new(e.user.id)
+    e.user.dm("**Welcome!** Please take your time to look arround, get yourself familiar with the rules and more. \n\n *If my messages seem to appear empty, please ensure you've enabled `Link Preview` in your Discord Settings.") # This message will be sent to the user when they join for the first time.
+  else
+    e.user.dm('**Welcome back!**') # This message will be sent to the user when they re-join.
   end
-
-  boom.member_join do |e|
-    if $db[:"#{e.user.id.to_s}"] == nil
-      $db[:"#{e.user.id.to_s}"] = User.new(e.user.id)
-      e.user.dm("**WELCOME!**\nWe're happy to have you arround here. Please take a look, read the rules and follow the instructions. Enjoy your stay!")
-    else
-      e.user.dm("**WELCOME BACK!**")
-    end
-  end
+  # TODO: Re-Assign roles.
+end
 
 boom.run
