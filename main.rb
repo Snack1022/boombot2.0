@@ -340,8 +340,8 @@ boom.ready do
     uupdate = []
     $db.each do |k, v|
       a = v.update
-      if a != 'false'
-        uupdate.push a
+      if a[0] != false
+        uupdate.push(a)
       end
     end
 
