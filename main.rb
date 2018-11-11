@@ -13,25 +13,25 @@ $prefix = File.read('currentprefix.txt').sub("\n", '')
 $reminders = []
 
 if File.exist?('config.yml')
-  $config = YAML.safe_load(File.read('config.yml'))
+  $config = YAML.load(File.read('config.yml'))
 else
   abort 'CRIT: Missing config.yml. Aborting!'
 end
 
 if File.exist?('configdb.yml')
-  $dbc = YAML.safe_load(File.read('configdb.yml'))
+  $dbc = YAML.load(File.read('configdb.yml'))
 else
   puts "WARNING: Couldn't find configdb.yml! Is the bot properly configured?"
 end
 
 if File.exist?('userdb.yml')
-  $db = YAML.safe_load(File.read('userdb.yml'))
+  $db = YAML.load(File.read('userdb.yml'))
 else
   puts "WARNING: Couldn't find userdb.yml! Did we suffer a data loss?"
 end
 
 if File.exist?('reminders.yml')
-  $reminders = YAML.safe_load(File.read('reminders.yml'))
+  $reminders = YAML.load(File.read('reminders.yml'))
 end
 
 def sensure(what)
@@ -194,13 +194,21 @@ boom.message do |e|
 
     if msg.start_with?('temprole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-        msg = msg.sub('temp ', '').sub('<@', '').sub('>', '').split(' ')
-        time = if msg[2].include?('h')
-                 Time.now + (msg[2].to_i * 3600)
-               else
-                 Time.now + (msg[2].to_i * 3600 * 24)
-               end
-        e.respond "TICKING RESPONSE: TEMP ASSIGN ROLE #{msg[1]} TO #{msg[0]} UNTIL UNIX #{time}"
+        msg = msg.sub('temprole ', '').sub('<@', '').sub('>', '').split(' ')
+        puts "DEBUG: #{msg}"
+        if msg[2].include?('h')
+          time = msg[2].to_i
+        else
+          time = msg[2].to_i * 24
+        end
+
+        max = [0, 111, 'rolename']
+        e.server.roles.each do |r|
+          max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
+        end
+        $db[:"#{msg[0]}"].temprole(e.server.id, max[2], time)
+        e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
+        e.channel.send_embed('', constructembed('BoomBot2.0 | temprole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> for #{time / 24} days and #{time % 24} hours!", e))
       else
         e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
@@ -320,9 +328,9 @@ end
 # end
 
 boom.ready do
+  runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
   loop do
-    runbar = ProgressBar.create title: 'Running!', total: 120
-    12.times do
+      12.times do
       boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1'].sample
       10.times { runbar.increment; sleep 1 }
     end
@@ -331,7 +339,10 @@ boom.ready do
     print 'Updating.'
     uupdate = []
     $db.each do |k, v|
-      uupdate.push(k) if v.update != false
+      a = v.update
+      if a != 'false'
+        uupdate.push a
+      end
     end
 
     # DEBUG:
@@ -357,7 +368,6 @@ boom.ready do
     File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
     File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
     puts '... Sucess!'
-    runbar.finish
   end
 end
 
