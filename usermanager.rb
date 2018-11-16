@@ -1,14 +1,14 @@
 ##
 # User-Class for BoomBot2.0
 # Containing methods:
-# 
+#
 # Constructor:
 #   #init(id) >> void
 #
 # Roles:
 #   #permrole(int Server ID, str Role Name) >> void
 #   #temprole(int Server ID, str Role Name) >> void
-#   #unrole(int Server ID, str Role Name) >> void 
+#   #unrole(int Server ID, str Role Name) >> void
 #   #roles >> Array of Roles assigned in UDB
 #
 # Bans:
@@ -39,9 +39,10 @@ class User
   # If the name parsed is invalid, BB20 will try to select the closest match.
   #
   # Stalemate resolval will be implemented on BB20's side.
-  def temprole(serverid, name, iDuration)
-    iDuration = iDuration * 3600 + Time.now.to_i
-    @roles.push([serverid, name, iDuration])
+  def temprole(serverid, name, iDuration, roleid)
+    # DEBUG MODE ENABLED!
+    iDuration = iDuration * 5 + Time.now.to_i
+    @roles.push([serverid, name, iDuration, roleid])
   end
 
   ##
@@ -114,7 +115,7 @@ class User
       end
     end
     if newr != @roles
-      requireupdate = true 
+      requireupdate = true
       # Check what exactly changed, return later for performance optimization of bot.
     end
 

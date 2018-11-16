@@ -195,7 +195,7 @@ boom.message do |e|
     if msg.start_with?('temprole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('temprole ', '').sub('<@', '').sub('>', '').split(' ')
-        puts "DEBUG: #{msg}"
+        # DEBUG DISABLED: puts "DEBUG: #{msg}"
         if msg[2].include?('h')
           time = msg[2].to_i
         else
@@ -206,7 +206,7 @@ boom.message do |e|
         e.server.roles.each do |r|
           max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
         end
-        $db[:"#{msg[0]}"].temprole(e.server.id, max[2], time)
+        $db[:"#{msg[0]}"].temprole(e.server.id, max[2], time, max[1])
         e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
         e.channel.send_embed('', constructembed('BoomBot2.0 | temprole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> for #{time / 24} days and #{time % 24} hours!", e))
       else
@@ -336,7 +336,7 @@ boom.ready do
     end
 
     puts
-    print 'Updating.'
+    puts 'Updating...'
     uupdate = []
     $db.each do |k, v|
       a = v.update
@@ -346,9 +346,7 @@ boom.ready do
     end
 
     # DEBUG:
-    puts uupdate
-
-    print '.'
+    puts YAML.dump(uupdate) # Easier to read and spot mistakes in code
 
     puts
     print 'Running reminder tasks...'
@@ -374,9 +372,9 @@ end
 boom.member_join do |e|
   if $db[:"#{e.user.id.to_s}"].nil? # Database: Check whether user did join server already.
     $db[:"#{e.user.id.to_s}"] = User.new(e.user.id)
-    e.user.dm("**Welcome!** Please take your time to look arround, get yourself familiar with the rules and more. \n\n *If my messages seem to appear empty, please ensure you've enabled `Link Preview` in your Discord Settings.") # This message will be sent to the user when they join for the first time.
+    # e.user.dm("**Welcome!** Please take your time to look arround, get yourself familiar with the rules and more. \n\n *If my messages seem to appear empty, please ensure you've enabled `Link Preview` in your Discord Settings.") # This message will be sent to the user when they join for the first time.
   else
-    e.user.dm('**Welcome back!**') # This message will be sent to the user when they re-join.
+    # e.user.dm('**Welcome back!**') # This message will be sent to the user when they re-join.
   end
   # TODO: Re-Assign roles.
 end
