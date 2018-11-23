@@ -116,6 +116,7 @@ class User
     end
     if newr != @roles
       requireupdate = true
+      # Update only contains 'remove'-instructions# Update only contains 'remove'-instructions
       # Check what exactly changed, return later for performance optimization of bot.
     end
 
@@ -124,7 +125,6 @@ class User
 
     # Update database
     @roles = newr
-
 
     # Scoping
     update[1] = []
@@ -138,6 +138,6 @@ class User
       end
     end
 
-    return [requireupdate, update]
+    return [requireupdate, @userid, update]
   end
 end

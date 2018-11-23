@@ -9,7 +9,7 @@ load 'usermanager.rb'
 $dbc = {}
 $config = {}
 $db = {}
-$prefix = File.read('currentprefix.txt').sub("\n", '')
+$prefix = File.read('currentprefix.txt').sub("\n", '') if File.exists?('currentprefix.txt')
 $reminders = []
 
 if File.exist?('config.yml')
@@ -42,7 +42,6 @@ sensure('token')
 sensure('clid')
 sensure('owner')
 sensure('permitted')
-sensure('tracked')
 
 puts 'SECURE_CONFIG_ENSURE successful!'
 puts 'Launching Bot...'
@@ -70,6 +69,7 @@ boom.message do |e|
   # TODO: Integrate error messages
 
   break if e.user.bot_account == true
+  break if $prefix == nil
 
   msg = e.message.content
   $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if $db[:"#{e.user.id.to_s}"].nil? # Construct User Elemements
@@ -319,13 +319,14 @@ boom.message(start_with: 'brsetprefix ') do |e|
   msg = 'nil'
 end
 
-# # Disabled for security purposes
-# boom.message(start_with: 'brgrabroles') do |e|
-#   e.server.roles.each do |r|
-#     puts "Role name: #{r.name} | Role ID: #{r.id}"
-#   end
-#   e.respond 'Please view console for details!'
-# end
+# #Disable for security purposes
+boom.message(start_with: 'brgrabroles') do |e|
+  break unless $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
+  e.server.roles.each do |r|
+    puts "Role name: #{r.name} | Role ID: #{r.id}"
+  end
+ # e.respond 'Please view console for details!'
+end
 
 boom.ready do
   runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
@@ -348,6 +349,10 @@ boom.ready do
     # DEBUG:
     puts YAML.dump(uupdate) # Easier to read and spot mistakes in code
 
+    uupdate.each do |g|
+      userid = g[1]
+    end
+
     puts
     print 'Running reminder tasks...'
 
@@ -356,7 +361,7 @@ boom.ready do
       # Formatting: [Time, e.channel.id, Message]
       next unless r[0] < Time.now
 
-      puts "#{r} is up to deploy!"
+      puts "#{r} triggered!"
       boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
       $reminders.delete(r)
     end
