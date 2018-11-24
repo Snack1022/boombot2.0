@@ -40,8 +40,7 @@ class User
   #
   # Stalemate resolval will be implemented on BB20's side.
   def temprole(serverid, name, iDuration, roleid)
-    # DEBUG MODE ENABLED!
-    iDuration = iDuration * 5 + Time.now.to_i
+    iDuration = iDuration * 3600 + Time.now.to_i
     @roles.push([serverid, name, iDuration, roleid])
   end
 
