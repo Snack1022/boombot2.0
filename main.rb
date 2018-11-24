@@ -67,7 +67,7 @@ boom = Discordrb::Bot.new token: $config[:token]
 
 boom.message do |e|
   # TODO: Integrate error messages
-
+  begin
   break if e.user.bot_account == true
   break if $prefix == nil
 
@@ -195,7 +195,6 @@ boom.message do |e|
     if msg.start_with?('temprole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('temprole ', '').sub('<@', '').sub('>', '').split(' ')
-        # DEBUG DISABLED: puts "DEBUG: #{msg}"
         if msg[2].include?('h')
           time = msg[2].to_i
         else
@@ -216,7 +215,16 @@ boom.message do |e|
     end
 
     if msg.start_with?('roles')
-      e.respond "TICKING RESPONSE: ROLES OF #{e.user.id}"
+      msg = msg.sub('roles ', '').sub('roles', '').sub('<@', '').sub('>', '')
+	  if msg == ''
+	    user = e.user.id.to_i
+	  else
+	    user = msg.to_i
+	  end
+	  puts "DEBUG: #{user.to_s} is the selected user"
+	  r = $db[:"#{user.to_s}"].roles()
+	  puts YAML.dump(r)
+	  raise 'DEBUG: UnfinishedMethodError'
       msg = 'nil'
     end
 
@@ -304,6 +312,13 @@ A detailed documentation will be created soon."
       $reminders.push([target, e.channel.id, txt.join(' ')])
       puts "DEBUG: $reminders = #{$reminders}"
     end
+  end
+  rescue => boomerror
+    msg = []
+	boomerror.backtrace.each do |msgp|
+	  msg.push "At: #{msgp}"
+	end
+    e.channel.send_embed('', constructembed('BOOMBOT2.0 | ERROR!', 'ff0000', "An error has occured. A bug report has been created and saved. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
   end
 end
 
