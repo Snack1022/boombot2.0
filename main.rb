@@ -351,6 +351,15 @@ boom.ready do
 
     uupdate.each do |g|
       userid = g[1]
+	  g[2].each do |r|
+	    next if r == []
+		  r.each do |l|
+	      serverid = l[0]
+		  roleid = l[3]
+		  puts "DEBUG: RM #{roleid.to_s} on #{serverid.to_s} from #{userid.to_s}"
+		  boom.server(serverid).member(userid).remove_role(roleid)	
+		end
+	  end
     end
 
     puts
