@@ -67,10 +67,10 @@ boom = Discordrb::Bot.new token: $config[:token]
 
 boom.message do |e|
   # TODO: Integrate error messages
-  begin
+
   break if e.user.bot_account == true
   break if $prefix == nil
-
+  begin
   msg = e.message.content
   $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if $db[:"#{e.user.id.to_s}"].nil? # Construct User Elemements
 
@@ -215,16 +215,17 @@ boom.message do |e|
     end
 
     if msg.start_with?('roles')
+      raise 'DEBUG: DevelopementError'
       msg = msg.sub('roles ', '').sub('roles', '').sub('<@', '').sub('>', '')
-	  if msg == ''
-	    user = e.user.id.to_i
-	  else
-	    user = msg.to_i
-	  end
-	  puts "DEBUG: #{user.to_s} is the selected user"
-	  r = $db[:"#{user.to_s}"].roles()
-	  puts YAML.dump(r)
-	  raise 'DEBUG: UnfinishedMethodError'
+	    if msg == ''
+	      user = e.user.id.to_i
+	    else
+	      user = msg.to_i
+	    end
+	    puts "DEBUG: #{user.to_s} is the selected user"
+	    r = $db[:"#{user.to_s}"].roles()
+	    puts YAML.dump(r)
+	    raise 'DEBUG: UnfinishedMethodError'
       msg = 'nil'
     end
 
@@ -372,7 +373,7 @@ boom.ready do
 	      serverid = l[0]
 		  roleid = l[3]
 		  puts "DEBUG: RM #{roleid.to_s} on #{serverid.to_s} from #{userid.to_s}"
-		  boom.server(serverid).member(userid).remove_role(roleid)	
+		  boom.server(serverid).member(userid).remove_role(roleid)
 		end
 	  end
     end
