@@ -231,8 +231,8 @@ boom.message do |e|
       counter = 0
       rmsg = []
 	    r = $db[:"#{user.to_s}"].roles()
-        if r == []
-          e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '0000ff', "<@#{user.to_s}> does not have any temporary or permanent roles.", e))
+        if not r.any?{|role| role[0] == e.server.id}
+          rmsg.push("<@#{user.to_s}> does not have any staged roles.")
         else
         r.each do |ri|
           next unless ri[0] == e.server.id
@@ -240,16 +240,26 @@ boom.message do |e|
           if ri[2] == 'perm'
             rmsg.push("#{counter.to_s}) `#{ri[1]}`, expires: `never`")
           else
-            rmsg.push("#{counter.to_s}) `#{ri[1]}`, expires: #{Time.at(ri[2]).strftime("%c")}")
+            time_total = Time.at(ri[2]).to_i - Time.now.to_i
+            time_days = time_total / 86400
+            time_hours = (time_total % 86400) / 3600
+            rmsg.push("#{counter.to_s}) `#{ri[1]}`, expires in: `#{time_hours.to_s}` days and `#{time_hours.to_s}` hours.")
           end
 
         end
       end
-      if rmsg == []
-        e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '0000ff', "<@#{user.to_s}> has no staged roles on this server.", e))
-      else
-        e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '00ff00', "<@#{user.to_s}> has `#{counter.to_s}` staged roles on this server:\n\n#{rmsg.join("\n")}"))
+      counter = 0
+      temparr = []
+      ur = boom.server(e.server.id).member(user).roles
+      ur.each do |urole|
+        if r.any? {|ri| ri[3] != urole.id}
+          counter += 1
+          temparr.push("#{counter.to_s}) `#{urole.name}`, is unstaged.")
+        end
       end
+      rmsg.push("\n<@#{user.to_s}> has #{counter.to_s} unstaged roles:")
+      rmsg.push(temparr.join("\n"))
+      e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '0000ff', "<@#{user.to_s}>'s roles:\n#{rmsg.join("\n")}", e))
       msg = 'nil'
     end
 
@@ -288,24 +298,8 @@ boom.message do |e|
     end
 
     if msg.start_with?('help')
-      e.respond "**__WAIT WAIT WAIT!__** This command is going to be added when the full release comes. Here's a quick overview tho:\nCommands:
-brsetprefix n - Sets the prefix to N. | Requires Owner Perms
-
-# = Placeholder for prefix
-#ping - Tries to calculate the Pseudo-Ping
-#warn @x y - Warns the user @x because of reason y
-#warnlist @x - Obtain a list of all warns against @x
-#setup a r - Populate Database Vectors with values, ex. role IDs for later assignment. DEV ONLY!
-#tempban @x duration - Skeleton: Tempbans user @x for duration
-#permban @x - Skeleton: Bans user @x permanently
-#permrole @x role - Skeleton: Assigns role role to @x
-#temprole @x role duration - Skeleton: Assignes role role to @x for a limited amount of time
-#roles @x - Skeleton: Allows you to see others roles and with proper permission modify these.
-#roleadd r @x - Adds specified role to specified user. Comes with AutoCorrect.
-
-A detailed documentation will be created soon."
+      e.channel.send_embed('Can\'t read this message? Enable link preview in your Discord settings!', constructembed('BoomBot2.0 | help', '0000ff', "The following commands are available:\n\n__**Everyone**__:\n`#{$prefix}help` - Displays this message\n`#{$prefix}ping` - This will attempt to calculate the pseudo-ping of the bot\n`#{$prefix}roles <@User>` - This will allow you to see which roles a user has. Alternatively supply with an ID instead of a tag.\n\n__**STAFF ONLY**__`#{$prefix}temprole <@User> <Role> <Time>` - Add a role temporarily to specified user. Default for time is days, use `h` in the time argument for hours\n`#{$prefix}permrole <@User> <Role>` - Add a role permanently to specified user. This role will stick with them even if they re-join the server.\n`#{$prefix}addrole <@User> <Role>` - *Alternatively roleadd <@User> role* Will add the specified role to specified user. Just a plain role.\n`#{$prefix}rmrole <@User> <Role>` - *Alternatively rolerm <@User> <Role>* Removes a role from specified user. Can be used to remove timed and permanent roles.\n**IMPORTANT: All role-commands come with an AutoCorrect feature to make life easier.**\n\n__**OWNER ONLY**__\n`#{$prefix}brsetprefix <new prefix>` - Updates the prefix of the bot. Can only be used if you're permitted to do so in the manual config files.",e))
     end
-
     # # Created for role assignment test
     #     if msg.start_with?('tmr')
     #       msg = msg.sub('tmr ', '')
@@ -314,7 +308,7 @@ A detailed documentation will be created soon."
     #       user = msg.to_i
     #       e.server.member(user).add_role(e.server.role($dbc[:test]))
     #     end
-
+=begin
     if msg.start_with?('remind')
       msg = msg.gsub('remind ', '')
       txt = msg.split(' ')
@@ -337,6 +331,7 @@ A detailed documentation will be created soon."
       $reminders.push([target, e.channel.id, txt.join(' ')])
       puts "DEBUG: $reminders = #{$reminders}"
     end
+=end
   end
   rescue => boomerror
     msg = []
@@ -404,7 +399,6 @@ boom.ready do
     print 'Running reminder tasks...'
 
     $reminders.each do |r|
-      puts "DEBUG: Inspecting #{r}"
       # Formatting: [Time, e.channel.id, Message]
       next unless r[0] < Time.now
 
