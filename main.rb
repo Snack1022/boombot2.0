@@ -69,10 +69,11 @@ boom.message do |e|
   # TODO: Integrate error messages
 
   break if e.user.bot_account == true
+  $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if $db[:"#{e.user.id.to_s}"].nil? # Construct User Elemements
   break if $prefix == nil
   begin
   msg = e.message.content
-  $db[:"#{e.user.id.to_s}"] = User.new(e.user.id) if $db[:"#{e.user.id.to_s}"].nil? # Construct User Elemements
+
 
   if msg.start_with?($prefix)
     msg = msg.sub($prefix, '')
@@ -183,18 +184,24 @@ boom.message do |e|
 
     if msg.start_with?('permrole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-        msg = msg.sub('permrole ', '').sub('<@', '').sub('>', '').split(' ')
-        e.respond "TICKING RESPONSE: PERM ASSIGN ROLE #{msg[1]} to #{msg[0]}"
+        msg = msg.sub('permrole ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
+        max = [0, 111, 'rolename']
+        e.server.roles.each do |r|
+          max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
+        end
+        puts $db
+        $db[:"#{msg[0].to_s}"].permrole(e.server.id, max[2], max[1])
+        e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
+        e.channel.send_embed('', constructembed('BoomBot2.0 | permrole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> permanently!", e))
       else
         e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
       end
-      msg = 'nil' # Database Scan for previous entries
-      # Add roles
+      msg = 'nil'
     end
 
     if msg.start_with?('temprole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-        msg = msg.sub('temprole ', '').sub('<@', '').sub('>', '').split(' ')
+        msg = msg.sub('temprole ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
         if msg[2].include?('h')
           time = msg[2].to_i
         else
@@ -205,7 +212,8 @@ boom.message do |e|
         e.server.roles.each do |r|
           max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
         end
-        $db[:"#{msg[0]}"].temprole(e.server.id, max[2], time, max[1])
+        puts $db
+        $db[:"#{msg[0].to_s}"].temprole(e.server.id, max[2], time, max[1])
         e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
         e.channel.send_embed('', constructembed('BoomBot2.0 | temprole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> for #{time / 24} days and #{time % 24} hours!", e))
       else

@@ -30,8 +30,8 @@ class User
   # If the name parsed is invalid, BB20 will try to select the closest match.
   #
   # Stalemate resolval will be implemented on BB20's side.
-  def permrole(serverid, name)
-    @roles.push([serverid, name, 'perm'])
+  def permrole(serverid, name, roleid)
+    @roles.push([serverid, name, 'perm', roleid])
   end
 
   ##
