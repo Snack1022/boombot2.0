@@ -105,7 +105,7 @@ boom.message do |e|
     end
 
     if msg.start_with?('warnlist')
-      msg = msg.sub('warnlist ', '').sub('<@', '').sub('>', '').to_i
+      msg = msg.sub('warnlist ', '').sub('<@!', '').sub('<@', '').sub('>', '').to_i
 
       uWarns = $db[:"#{msg}"].getwarns(e.server.id)
       if uWarns.empty?
@@ -126,7 +126,7 @@ boom.message do |e|
     end
 
     if msg.start_with?('warn')
-      msg = msg.sub('warn ', '').sub('<@', '').sub('>', '').split(' ')
+      msg = msg.sub('warn ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
       warnusr = msg[0]
       msg.delete_at(0) # Can't be included into code; returns value which should be voided
       warnmsg = msg.join(' ')
@@ -163,7 +163,7 @@ boom.message do |e|
                  else
                    Time.now + (a[0].to_i * 24)
                  end
-        banusr = a[1].sub('<@', '').sub('>', '')
+        banusr = a[1].sub('<@!', '').sub('<@', '').sub('>', '')
         e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: UNTIL UNIX #{bandur.to_s * 3600}"
       else
         e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
@@ -174,7 +174,7 @@ boom.message do |e|
     if msg.start_with?('permban')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         msg = msg.sub('permban ', '')
-        banusr = msg.sub('<@', '').sub('>', '')
+        banusr = msg.sub('<@!', '').sub('<@', '').sub('>', '')
         e.respond "TICKING RESPONSE: PERMABAN FOR #{banusr}"
       else
         e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
@@ -223,17 +223,35 @@ boom.message do |e|
     end
 
     if msg.start_with?('roles')
-      raise 'DEBUG: DevelopementError'
-      msg = msg.sub('roles ', '').sub('roles', '').sub('<@', '').sub('>', '')
+      msg = msg.sub('roles ', '').sub('roles', '').sub('<@!', '').sub('<@', '').sub('>', '')
 	    if msg == ''
 	      user = e.user.id.to_i
 	    else
 	      user = msg.to_i
 	    end
+      counter = 0
+      rmsg = []
 	    puts "DEBUG: #{user.to_s} is the selected user"
 	    r = $db[:"#{user.to_s}"].roles()
-	    puts YAML.dump(r)
-	    raise 'DEBUG: UnfinishedMethodError'
+        if r == []
+          e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '0000ff', "<@#{user.to_s}> does not have any temporary or permanent roles.", e))
+        else
+        r.each do |ri|
+          next unless ri[0] == e.server.id
+          counter += 1
+          if ri[2] == 'perm'
+            rmsg.push("#{counter.to_s}) `#{ri[1]}`, expires: `never`")
+          else
+            rmsg.push("#{counter.to_s}) `#{ri[1]}`, expires: #{Time.at(ri[2]).strftime("%c")}")
+          end
+
+        end
+      end
+      if rmsg == []
+        e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '0000ff', "<@#{user.to_s}> has no staged roles on this server.", e))
+      else
+        e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '00ff00', "<@#{user.to_s}> has `#{counter.to_s}` staged roles on this server:\n\n#{rmsg.join("\n")}"))
+      end
       msg = 'nil'
     end
 
@@ -245,7 +263,7 @@ boom.message do |e|
         e.server.roles.each do |r|
           max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
         end
-        user = txt.shift.sub('<@', '').sub('>', '')
+        user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
         e.server.member(user.to_i).add_role(e.server.role(max[1].to_i))
         e.channel.send_embed('', constructembed('BoomBot2.0 | roleadd', '00ff00', "The role `#{max[2]}` has been assigned to <@#{user}>. \n AutoCorrect: #{max[0]}%", e))
       else
@@ -262,7 +280,7 @@ boom.message do |e|
         e.server.roles.each do |r|
           max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
         end
-        user = txt.shift.sub('<@', '').sub('>', '')
+        user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
         e.server.member(user.to_i).remove_role(e.server.role(max[1].to_i))
         e.channel.send_embed('', constructembed('BoomBot2.0 | rolerm', '00ff00', "The role `#{max[2]}` has been removed from <@#{user}>. \n AutoCorrect: #{max[0]}%", e))
       else
