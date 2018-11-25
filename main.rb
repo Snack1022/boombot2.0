@@ -212,7 +212,6 @@ boom.message do |e|
         e.server.roles.each do |r|
           max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
         end
-        puts $db
         $db[:"#{msg[0].to_s}"].temprole(e.server.id, max[2], time, max[1])
         e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
         e.channel.send_embed('', constructembed('BoomBot2.0 | temprole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> for #{time / 24} days and #{time % 24} hours!", e))
@@ -231,7 +230,6 @@ boom.message do |e|
 	    end
       counter = 0
       rmsg = []
-	    puts "DEBUG: #{user.to_s} is the selected user"
 	    r = $db[:"#{user.to_s}"].roles()
         if r == []
           e.channel.send_embed('', constructembed('BoomBot2.0 | roles', '0000ff', "<@#{user.to_s}> does not have any temporary or permanent roles.", e))
@@ -342,9 +340,9 @@ A detailed documentation will be created soon."
   end
   rescue => boomerror
     msg = []
-	boomerror.backtrace.each do |msgp|
-	  msg.push "At: #{msgp}"
-	end
+   	boomerror.backtrace.each do |msgp|
+	    msg.push "At: #{msgp}"
+  	end
     e.channel.send_embed('', constructembed('BOOMBOT2.0 | ERROR!', 'ff0000', "An error has occured. A bug report has been created and saved. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
   end
 end
@@ -371,6 +369,7 @@ boom.message(start_with: 'brgrabroles') do |e|
 end
 
 boom.ready do
+  begin
   runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
   loop do
       12.times do
@@ -387,9 +386,6 @@ boom.ready do
         uupdate.push(a)
       end
     end
-
-    # DEBUG:
-    puts YAML.dump(uupdate) # Easier to read and spot mistakes in code
 
     uupdate.each do |g|
       userid = g[1]
@@ -422,6 +418,13 @@ boom.ready do
     File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
     File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
     puts '... Sucess!'
+  end
+  rescue => boomerror
+    msg = []
+    boomerror.backtrace.each do |msgp|
+      msg.push "At: #{msgp}"
+    end
+    boom.server(489866634849157120).channel(516194712248385546).send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
   end
 end
 
