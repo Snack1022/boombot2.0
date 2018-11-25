@@ -1,3 +1,8 @@
+# Bug Reports:
+# - Persistent Roles are not persistent
+# - Users without roles in DB don't seem to have any roles using roles
+
+
 require 'rubygems'
 require 'bundler/setup'
 
@@ -266,12 +271,12 @@ boom.message do |e|
     if msg.start_with?('roleadd', 'addrole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         txt = msg.sub('roleadd ', '').sub('addrole ', '').split(' ')
+        user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
         role = txt.shift
         max = [0, 111, 'rolename']
         e.server.roles.each do |r|
           max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
         end
-        user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
         e.server.member(user.to_i).add_role(e.server.role(max[1].to_i))
         e.channel.send_embed('', constructembed('BoomBot2.0 | roleadd', '00ff00', "The role `#{max[2]}` has been assigned to <@#{user}>. \n AutoCorrect: #{max[0]}%", e))
       else
@@ -283,12 +288,12 @@ boom.message do |e|
     if msg.start_with?('rolerm', 'rmrole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
         txt = msg.sub('rolerm ', '').sub('rmrole ', '').split(' ')
+        user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
         role = txt.shift
         max = [0, 111, 'rolename']
         e.server.roles.each do |r|
           max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
         end
-        user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
         e.server.member(user.to_i).remove_role(e.server.role(max[1].to_i))
         e.channel.send_embed('', constructembed('BoomBot2.0 | rolerm', '00ff00', "The role `#{max[2]}` has been removed from <@#{user}>. \n AutoCorrect: #{max[0]}%", e))
       else
