@@ -110,7 +110,7 @@ class User
     newr = []
     update = []
     @roles.each do |r|
-      if r[2] > Time.now.to_i || r[2] == 'perm'
+      if r[2] == 'perm' || r[2] > Time.now.to_i
         newr.push r
       end
     end

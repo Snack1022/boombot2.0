@@ -322,6 +322,10 @@ boom.message do |e|
       if msg.start_with?('help')
         e.channel.send_embed('', constructembed('BoomBot2.0 | help', '0000ff', "The following commands are available:\n\n__**Everyone**__:\n`#{$prefix}ping` - This will attempt to calculate the pseudo-ping of the bot\n`#{$prefix}roles <@User>` - This will allow you to see which roles a user has. Alternatively supply with an ID instead of a tag.\n\n__**STAFF ONLY**__\n`#{$prefix}temprole <@User> <Role> <Time>` - Add a role temporarily to specified user. Default for time is days, use `h` in the time argument for hours\n`#{$prefix}permrole <@User> <Role>` - Add a role permanently to specified user. This role will stick with them even if they re-join the server.\n`#{$prefix}addrole <@User> <Role>` - *Alternatively `roleadd <@User> role`* Will add the specified role to specified user. Just a plain role.\n`#{$prefix}rmrole <@User> <Role>` - *Alternatively `rolerm <@User> <Role>` or `removerole <@User> <Role>* Removes a role from specified user. Can be used to remove timed and permanent roles.\n**IMPORTANT: All role-commands come with an AutoCorrect feature to make life easier.**\n\n__**OWNER ONLY**__\n`#{$prefix}brsetprefix <new prefix>` - Updates the prefix of the bot. Can only be used if you're permitted to do so in the manual config files.", e))
       end
+
+      if msg.start_with?('setgame')
+
+      end
       # # Created for role assignment test
       #     if msg.start_with?('tmr')
       #       msg = msg.sub('tmr ', '')
@@ -397,7 +401,7 @@ boom.ready do
       puts
       puts 'Updating...'
       uupdate = []
-      $db.each do |_k, v|
+      $db.each do |k, v|
         a = v.update
         uupdate.push(a) if a[0] != false
       end
@@ -439,18 +443,37 @@ boom.ready do
     boomerror.backtrace.each do |msgp|
       msg.push "At: #{msgp}"
     end
-    boom.server(489_866_634_849_157_120).channel(516_194_712_248_385_546).send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
+    boom.server(489_866_634_849_157_120).channels.each do |ch|
+      if ch.id == 516_194_712_248_385_546
+        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
+      end
+    end
   end
 end
 
 boom.member_join do |e|
-  if $db[:"#{e.user.id.to_s}"].nil? # Database: Check whether user did join server already.
-    $db[:"#{e.user.id.to_s}"] = User.new(e.user.id)
-    # e.user.dm("**Welcome!** Please take your time to look arround, get yourself familiar with the rules and more. \n\n *If my messages seem to appear empty, please ensure you've enabled `Link Preview` in your Discord Settings.") # This message will be sent to the user when they join for the first time.
-  else
-    # e.user.dm('**Welcome back!**') # This message will be sent to the user when they re-join.
+  begin
+    if $db[:"#{e.user.id.to_s}"].nil? # Database: Check whether user did join server already.
+      $db[:"#{e.user.id.to_s}"] = User.new(e.user.id)
+    end
+    
+    $db[:"#{e.user.id.to_s}"].roles.each do |dbr|
+      if dbr[0] == e.server.id
+        e.server.member(e.user.id).add_role(dbr[3])
+      end
+    end
+
+  rescue StandardError => boomerror
+    msg = []
+    boomerror.backtrace.each do |msgp|
+      msg.push "At: #{msgp}"
+    end
+    boom.server(489_866_634_849_157_120).channels.each do |ch|
+      if ch.id == 516_194_712_248_385_546
+        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
+      end
+    end
   end
-  # TODO: Re-Assign roles.
 end
 
 boom.run
