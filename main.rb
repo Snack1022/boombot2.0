@@ -1,8 +1,3 @@
-# Bug Reports:
-# - Persistent Roles are not persistent / Add Re-Add Mechanism (once per 24h and on join)
-# - Users without roles in DB don't seem to have any roles using roles
-
-
 require 'rubygems'
 require 'bundler/setup'
 
@@ -303,7 +298,7 @@ boom.message do |e|
     end
 
     if msg.start_with?('help')
-      e.channel.send_embed('Can\'t read this message? Enable link preview in your Discord settings!', constructembed('BoomBot2.0 | help', '0000ff', "The following commands are available:\n\n__**Everyone**__:\n`#{$prefix}help` - Displays this message\n`#{$prefix}ping` - This will attempt to calculate the pseudo-ping of the bot\n`#{$prefix}roles <@User>` - This will allow you to see which roles a user has. Alternatively supply with an ID instead of a tag.\n\n__**STAFF ONLY**__`#{$prefix}temprole <@User> <Role> <Time>` - Add a role temporarily to specified user. Default for time is days, use `h` in the time argument for hours\n`#{$prefix}permrole <@User> <Role>` - Add a role permanently to specified user. This role will stick with them even if they re-join the server.\n`#{$prefix}addrole <@User> <Role>` - *Alternatively roleadd <@User> role* Will add the specified role to specified user. Just a plain role.\n`#{$prefix}rmrole <@User> <Role>` - *Alternatively rolerm <@User> <Role>* Removes a role from specified user. Can be used to remove timed and permanent roles.\n**IMPORTANT: All role-commands come with an AutoCorrect feature to make life easier.**\n\n__**OWNER ONLY**__\n`#{$prefix}brsetprefix <new prefix>` - Updates the prefix of the bot. Can only be used if you're permitted to do so in the manual config files.",e))
+      e.channel.send_embed('', constructembed('BoomBot2.0 | help', '0000ff', "The following commands are available:\n\n__**Everyone**__:\n`#{$prefix}ping` - This will attempt to calculate the pseudo-ping of the bot\n`#{$prefix}roles <@User>` - This will allow you to see which roles a user has. Alternatively supply with an ID instead of a tag.\n\n__**STAFF ONLY**__\n`#{$prefix}temprole <@User> <Role> <Time>` - Add a role temporarily to specified user. Default for time is days, use `h` in the time argument for hours\n`#{$prefix}permrole <@User> <Role>` - Add a role permanently to specified user. This role will stick with them even if they re-join the server.\n`#{$prefix}addrole <@User> <Role>` - *Alternatively roleadd <@User> role* Will add the specified role to specified user. Just a plain role.\n`#{$prefix}rmrole <@User> <Role>` - *Alternatively rolerm <@User> <Role>* Removes a role from specified user. Can be used to remove timed and permanent roles.\n**IMPORTANT: All role-commands come with an AutoCorrect feature to make life easier.**\n\n__**OWNER ONLY**__\n`#{$prefix}brsetprefix <new prefix>` - Updates the prefix of the bot. Can only be used if you're permitted to do so in the manual config files.",e))
     end
     # # Created for role assignment test
     #     if msg.start_with?('tmr')
