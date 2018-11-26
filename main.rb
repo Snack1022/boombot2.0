@@ -1,5 +1,5 @@
 # Bug Reports:
-# - Persistent Roles are not persistent
+# - Persistent Roles are not persistent / Add Re-Add Mechanism (once per 24h and on join)
 # - Users without roles in DB don't seem to have any roles using roles
 
 
@@ -248,7 +248,7 @@ boom.message do |e|
             time_total = Time.at(ri[2]).to_i - Time.now.to_i
             time_days = time_total / 86400
             time_hours = (time_total % 86400) / 3600
-            rmsg.push("#{counter.to_s}) `#{ri[1]}`, expires in: `#{time_hours.to_s}` days and `#{time_hours.to_s}` hours.")
+            rmsg.push("#{counter.to_s}) `#{ri[1]}`, expires in: `#{time_days.to_s}` days and `#{time_hours.to_s}` hours.")
           end
 
         end
@@ -257,7 +257,7 @@ boom.message do |e|
       temparr = []
       ur = boom.server(e.server.id).member(user).roles
       ur.each do |urole|
-        if r.any? {|ri| ri[3] != urole.id}
+        if r.any? {|ri| ri[3] != urole.id} || r == []
           counter += 1
           temparr.push("#{counter.to_s}) `#{urole.name}`, is unstaged.")
         end
@@ -285,9 +285,9 @@ boom.message do |e|
       msg = 'nil'
     end
 
-    if msg.start_with?('rolerm', 'rmrole')
+    if msg.start_with?('rolerm', 'rmrole', 'removerole')
       if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-        txt = msg.sub('rolerm ', '').sub('rmrole ', '').split(' ')
+        txt = msg.sub('rolerm ', '').sub('rmrole ', '').sub('removerole ').split(' ')
         user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
         role = txt.shift
         max = [0, 111, 'rolename']
