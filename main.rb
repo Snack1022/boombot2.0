@@ -35,6 +35,12 @@ if File.exist?('reminders.yml')
   $reminders = YAML.load(File.read('reminders.yml'))
 end
 
+if File.exist?('games.txt')
+  $games = File.read('games.txt').split("\n")
+else
+  $games = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1']
+end
+
 def sensure(what)
   abort("FAILED ensure: #{what} on $config!") if $config[:"#{what}"].nil?
 end
@@ -324,7 +330,19 @@ boom.message do |e|
       end
 
       if msg.start_with?('setgame')
-
+        if $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
+          msg = msg.sub('setgame ', '')
+          if msg.start_with?('&')
+            $games.push(msg.sub('&', ''))
+          else
+            $games = [msg]
+          end
+         File.open('games.txt', 'w') {|f| $games.each {|d| f.puts d}}
+          e.channel.send_embed('', constructembed('BoomBot2.0 | SetGame', '00ff00', "The playing games list has been updated! It does now consist of the following:\n`#{YAML.dump $games}`",e))
+        else
+          e.respond "**PERMISSION ERROR!**\n\nI'm sorry, #{e.user.mention}, but you don't seem to be permitted to use recovery commands!"
+        end
+        msg = 'nil'
       end
       # # Created for role assignment test
       #     if msg.start_with?('tmr')
@@ -393,7 +411,7 @@ boom.ready do
     #runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
     loop do
       12.times do
-        boom.game = ['BoomBot2.0!', 'OVERWATCH (of a server)', 'Eternal Server Game', "#{$prefix}help", 'Selling Bass...', 'Distributing some secrets...', 'Discord Studio 20', 'Something about Basslines', 'Bassfield 1'].sample
+        boom.game = $games.sample
         #10.times { runbar.increment; sleep 1 }
         10.times {sleep 1}
       end
@@ -456,7 +474,7 @@ boom.member_join do |e|
     if $db[:"#{e.user.id.to_s}"].nil? # Database: Check whether user did join server already.
       $db[:"#{e.user.id.to_s}"] = User.new(e.user.id)
     end
-    
+
     $db[:"#{e.user.id.to_s}"].roles.each do |dbr|
       if dbr[0] == e.server.id
         e.server.member(e.user.id).add_role(dbr[3])

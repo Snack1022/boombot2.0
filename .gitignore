@@ -18,6 +18,7 @@ configdb.yml
 userdb.yml
 reminders.yml
 announcementengine.rb
+games.txt
 
 ## Specific to RubyMotion:
 .dat*
