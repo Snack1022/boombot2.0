@@ -326,7 +326,7 @@ boom.message do |e|
       end
 
       if msg.start_with?('help')
-        e.channel.send_embed('', constructembed('BoomBot2.0 | help', '0000ff', "The following commands are available:\n\n__**Everyone**__:\n`#{$prefix}ping` - This will attempt to calculate the pseudo-ping of the bot\n`#{$prefix}roles <@User>` - This will allow you to see which roles a user has. Alternatively supply with an ID instead of a tag.\n\n__**STAFF ONLY**__\n`#{$prefix}temprole <@User> <Role> <Time>` - Add a role temporarily to specified user. Default for time is days, use `h` in the time argument for hours\n`#{$prefix}permrole <@User> <Role>` - Add a role permanently to specified user. This role will stick with them even if they re-join the server.\n`#{$prefix}addrole <@User> <Role>` - *Alternatively `roleadd <@User> role`* Will add the specified role to specified user. Just a plain role.\n`#{$prefix}rmrole <@User> <Role>` - *Alternatively `rolerm <@User> <Role>` or `removerole <@User> <Role>`* Removes a role from specified user. Can be used to remove timed and permanent roles.\n**IMPORTANT: All role-commands come with an AutoCorrect feature to make life easier.**\n\n__**OWNER ONLY**__\n`brsetprefix <new prefix>` - Updates the prefix of the bot. Can only be used if you're permitted to do so in the manual config files.\n`#{$prefix}setgame <new game status>` - Updates the 'Playing'-Game. Use an `&` infront of the game to add it to a shuffled list, use the command without the & to set it.", e))
+        e.channel.send_embed('', constructembed('BoomBot2.0 | help', '0000ff', "The following commands are available:\n\n__**Everyone**__:\n`#{$prefix}ping` - This will attempt to calculate the pseudo-ping of the bot\n`#{$prefix}roles <@User>` - This will allow you to see which roles a user has. Alternatively supply with an ID instead of a tag.\n\n__**STAFF ONLY**__\n`#{$prefix}temprole <@User> <Role> <Time>` - Add a role temporarily to specified user. Default for time is days, use `h` in the time argument for hours\n`#{$prefix}permrole <@User> <Role>` - Add a role permanently to specified user. This role will stick with them even if they re-join the server.\n`#{$prefix}addrole <@User> <Role>` - *Alternatively `roleadd <@User> <role>`* Will add the specified role to specified user. Just a plain role.\n`#{$prefix}rmrole <@User> <Role>` - *Alternatively `rolerm <@User> <Role>` or `removerole <@User> <Role>`* Removes a role from specified user. Can be used to remove timed and permanent roles.\n**IMPORTANT: All role-commands come with an AutoCorrect feature to make life easier.**\n\n__**OWNER ONLY**__\n`brsetprefix <new prefix>` - Updates the prefix of the bot. Can only be used if you're permitted to do so in the manual config files.\n`#{$prefix}setgame <new game status>` - Updates the 'Playing'-Game. Use an `&` infront of the game to add it to a shuffled list, use the command without the & to set it.", e))
       end
 
       if msg.start_with?('setgame')
@@ -342,6 +342,22 @@ boom.message do |e|
         else
           e.respond "**PERMISSION ERROR!**\n\nI'm sorry, #{e.user.mention}, but you don't seem to be permitted to use recovery commands!"
         end
+        msg = 'nil'
+      end
+
+      if msg.start_with?('rar')
+        msg = msg.sub('rar ', '').sub('<@!', '').sub('<@', '').sub('>', '')
+        if msg.to_i != 0
+          user = msg.to_i
+        else
+          user = e.user.id
+        end
+        $db[:"#{user.to_s}"].roles.each do |dbr|
+          if dbr[0] == e.server.id
+            e.server.member(e.user.id).add_role(dbr[3])
+          end
+        end
+        e.channel.send_embed('', constructembed('BoomBot2.0 | Re-assign roles', '00ff00', "Re-Assigning the roles of <@#{user.to_s}> was successful!" , e))
         msg = 'nil'
       end
       # # Created for role assignment test
@@ -407,9 +423,12 @@ boom.message(start_with: 'brgrabroles') do |e|
 end
 
 boom.ready do
-  begin
+  
     #runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
+    loops = 0
     loop do
+      loops += 1
+      begin
       12.times do
         boom.game = $games.sample
         #10.times { runbar.increment; sleep 1 }
@@ -455,15 +474,20 @@ boom.ready do
       File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
       File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
       puts '... Sucess!'
-    end
-  rescue StandardError => boomerror
-    msg = []
-    boomerror.backtrace.each do |msgp|
-      msg.push "At: #{msgp}"
-    end
-    boom.server(489_866_634_849_157_120).channels.each do |ch|
-      if ch.id == 516_194_712_248_385_546
-        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
+
+      if loops > 180
+        puts 'Attempting to reassign roles to everyone...'
+        puts 'SKIPPED! Feature not done yet!'
+      end
+    rescue StandardError => boomerror
+      msg = []
+      boomerror.backtrace.each do |msgp|
+        msg.push "At: #{msgp}"
+      end
+      boom.server(489_866_634_849_157_120).channels.each do |ch|
+        if ch.id == 516_194_712_248_385_546
+          ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
+        end
       end
     end
   end
