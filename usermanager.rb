@@ -66,9 +66,13 @@ class User
   ##
   # DOC TODO:
   def roles()
+    # Structure: [serverid, name, time, roleid]
     return @roles
   end
 
+  def uid()
+    return @userid
+  end
   ##
   # DOC TODO:
   def banstatus()

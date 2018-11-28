@@ -477,7 +477,14 @@ boom.ready do
 
       if loops > 180
         puts 'Attempting to reassign roles to everyone...'
-        puts 'SKIPPED! Feature not done yet!'
+        $db.each do |k, v|
+          v.roles().each do |vrole|
+            boom.server(vrole[0]).member(v.uid()).add_role(vrole[3])
+          end
+        end
+        puts 'Re-assigned roles!'
+        # puts 'SKIPPED! Feature not done yet!'
+        loops = 0
       end
     rescue StandardError => boomerror
       msg = []
