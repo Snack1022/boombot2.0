@@ -100,10 +100,8 @@ boom.message do |e|
       if msg.start_with?('rmwarn')
         msg = msg.sub('rmwarn <@', '').sub('>', '')
         msg = msg.split(' ')
-        puts msg # DEBUG
         userID = msg[0].to_i
         warnID = msg[1].to_i
-        puts "userID = #{userID}; warnID = #{warnID}"
         if $db[:"#{userID.to_s}"].undowarn(warnID) == true
           e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', '00ff00', "The warning has been successfully removed from <@#{userID}>!", e))
         else
@@ -121,9 +119,6 @@ boom.message do |e|
         else
           # TODO: Prevent overload!
           uWarnsProc = []
-          # DEBUG:
-          # puts uWarns
-          # DEBUG END!
           (1..uWarns.length).each do |i|
             uWarnsProc.push("#{uWarns[(i - 1)][3]}): #{uWarns[(i - 1)][0]}: #{uWarns[(i - 1)][1]}")
           end
@@ -197,7 +192,6 @@ boom.message do |e|
           e.server.roles.each do |r|
             max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
           end
-          puts $db
           $db[:"#{msg[0].to_s}"].permrole(e.server.id, max[2], max[1])
           e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
           e.channel.send_embed('', constructembed('BoomBot2.0 | permrole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> permanently!", e))
@@ -304,10 +298,8 @@ boom.message do |e|
           counter = 0
 
           userroles = $db[:"#{user.to_s}"].roles
-          puts userroles.inspect
           # binding.pry
           userroles.dup.each do |usercache|
-            puts usercache.inspect
             if usercache[1] == max[2] && usercache[0] == e.server.id
               $db[:"#{user.to_s}"].unrole(e.server.id, max[2])
               counter += 1
@@ -427,8 +419,8 @@ boom.ready do
     #runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
     loops = 0
     loop do
-      loops += 1
       begin
+      loops += 1
       12.times do
         boom.game = $games.sample
         #10.times { runbar.increment; sleep 1 }
@@ -442,7 +434,7 @@ boom.ready do
         a = v.update
         uupdate.push(a) if a[0] != false
       end
-
+      puts YAML.dump(uupdate)
       uupdate.each do |g|
         userid = g[1]
         g[2].each do |r|
@@ -483,7 +475,6 @@ boom.ready do
           end
         end
         puts 'Re-assigned roles!'
-        # puts 'SKIPPED! Feature not done yet!'
         loops = 0
       end
     rescue StandardError => boomerror

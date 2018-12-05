@@ -25,6 +25,14 @@ class User
     @warnings = []
   end
 
+  def ctime(input)
+    if input == 'perm'
+      return Float::INFINITY
+    else
+      return input.to_i
+    end
+  end
+
   ##
   # Adds a role permanently to the user on specified server.
   # If the name parsed is invalid, BB20 will try to select the closest match.
@@ -40,7 +48,6 @@ class User
   #
   # Stalemate resolval will be implemented on BB20's side.
   def temprole(serverid, name, iDuration, roleid)
-    # DEBUG DISABLED!
     iDuration = iDuration * 3600 + Time.now.to_i
     @roles.push([serverid, name, iDuration, roleid])
   end
@@ -112,26 +119,45 @@ class User
     requireupdate = false
     # Check Roles
     newr = []
-    update = []
+    update = [[], []]
     @roles.each do |r|
       if r[2] == 'perm' || r[2] > Time.now.to_i
         newr.push r
       end
     end
-    if newr != @roles
-      requireupdate = true
-      # Update only contains 'remove'-instructions# Update only contains 'remove'-instructions
-      # Check what exactly changed, return later for performance optimization of bot.
+
+    # Merge roles
+    # [serverid, name, time, roleid]
+    mr = []
+    @roles.each do |r|
+      if mr.any? {|a| a[3] == r[3]}
+        mr.each do |a|
+          # Select Obj
+          if a[3] == r[3]
+            if ctime(r[2]) > ctime(a[2])
+              mr.delete(a)
+              mr.push(r)
+            # No else-Statement required as this will NEVER happen
+            end
+          end
+        end
+      else
+        # Fast-FWD
+        mr.push(r)
+      end
     end
+    @roles = mr
 
     # Update only contains 'remove'-instructions.
-    update[0] = @roles - newr
+    @roles.each do |r|
+      if ctime(r[2]) < Time.now.to_i
+        update[0].push(r)
+        @roles.delete(r)
+      end
+    end
 
     # Update database
     @roles = newr
-
-    # Scoping
-    update[1] = []
 
     # Check bans
     @tempban.each do |t|
