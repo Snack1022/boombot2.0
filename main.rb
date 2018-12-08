@@ -188,6 +188,28 @@ boom.message do |e|
       if msg.start_with?('permrole')
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           msg = msg.sub('permrole ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
+          if msg[0].to_i == 0
+            
+              # When a user name got passed
+              
+              # Pseudo:
+              # Download all server members
+              # AutoCorrect through the list
+              # Set user to the most corresponding ID
+  
+              # Copy-Paste from AutoCorrect for roles:
+              # max = [0, 111, 'rolename']
+              # e.server.roles.each do |r|
+              # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+              # end
+  
+              usrmax = [0, 111, 'username']
+              e.server.members.each do |m|
+                usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+              end
+              msg[0] = usrmax[1]
+            
+          end
           max = [0, 111, 'rolename']
           e.server.roles.each do |r|
             max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
@@ -214,6 +236,28 @@ boom.message do |e|
           e.server.roles.each do |r|
             max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
           end
+
+          if msg[0].to_i == 0
+            # When a user name got passed
+            
+            # Pseudo:
+            # Download all server members
+            # AutoCorrect through the list
+            # Set user to the most corresponding ID
+
+            # Copy-Paste from AutoCorrect for roles:
+            # max = [0, 111, 'rolename']
+            # e.server.roles.each do |r|
+            # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+            # end
+
+            usrmax = [0, 111, 'username']
+            e.server.members.each do |m|
+              usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+            end
+            msg[0] = usrmax[1]
+          end
+
           $db[:"#{msg[0].to_s}"].temprole(e.server.id, max[2], time, max[1])
           e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
           e.channel.send_embed('', constructembed('BoomBot2.0 | temprole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> for #{time / 24} days and #{time % 24} hours!", e))
@@ -230,6 +274,26 @@ boom.message do |e|
                else
                  msg.to_i
                end
+        if user.to_i == 0
+                # When a user name got passed
+                
+                # Pseudo:
+                # Download all server members
+                # AutoCorrect through the list
+                # Set user to the most corresponding ID
+    
+                # Copy-Paste from AutoCorrect for roles:
+                # max = [0, 111, 'rolename']
+                # e.server.roles.each do |r|
+                # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+                # end
+    
+                usrmax = [0, 111, 'username']
+                e.server.members.each do |m|
+                  usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+                end
+                user = usrmax[1]
+        end
         counter = 0
         rmsg = []
         r = $db[:"#{user.to_s}"].roles
@@ -269,6 +333,26 @@ boom.message do |e|
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           txt = msg.sub('roleadd ', '').sub('addrole ', '').split(' ')
           user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
+          if user.to_i == 0
+            # When a user name got passed
+            
+            # Pseudo:
+            # Download all server members
+            # AutoCorrect through the list
+            # Set user to the most corresponding ID
+
+            # Copy-Paste from AutoCorrect for roles:
+            # max = [0, 111, 'rolename']
+            # e.server.roles.each do |r|
+            # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+            # end
+
+            usrmax = [0, 111, 'username']
+            e.server.members.each do |m|
+              usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+            end
+            user = usrmax[1]
+          end
           role = txt.shift
           max = [0, 111, 'rolename']
           e.server.roles.each do |r|
@@ -286,6 +370,7 @@ boom.message do |e|
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           txt = msg.sub('rolerm ', '').sub('rmrole ', '').sub('removerole ', '').split(' ')
           user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
+          
           if user.to_i == 0
             # When a user name got passed
             
@@ -361,9 +446,31 @@ boom.message do |e|
         msg = msg.sub('rar ', '').sub('<@!', '').sub('<@', '').sub('>', '')
         if msg.to_i != 0
           user = msg.to_i
-        else
+        elsif msg == ''
           user = e.user.id
+        else
+          user = msg
+            # When a user name got passed
+            
+            # Pseudo:
+            # Download all server members
+            # AutoCorrect through the list
+            # Set user to the most corresponding ID
+
+            # Copy-Paste from AutoCorrect for roles:
+            # max = [0, 111, 'rolename']
+            # e.server.roles.each do |r|
+            # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+            # end
+
+            usrmax = [0, 111, 'username']
+            e.server.members.each do |m|
+              usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+            end
+            user = usrmax[1]
+          
         end
+
         $db[:"#{user.to_s}"].roles.each do |dbr|
           if dbr[0] == e.server.id
             e.server.member(e.user.id).add_role(dbr[3])
