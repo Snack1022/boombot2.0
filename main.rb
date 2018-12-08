@@ -189,6 +189,7 @@ boom.message do |e|
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           msg = msg.sub('permrole ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
           if msg[0].to_i == 0
+            user = msg[0]
 
             # When a user name got passed
 
@@ -238,6 +239,7 @@ boom.message do |e|
           end
 
           if msg[0].to_i == 0
+            user = msg[0]
             # When a user name got passed
 
             # Pseudo:
@@ -269,31 +271,33 @@ boom.message do |e|
 
       if msg.start_with?('roles')
         msg = msg.sub('roles ', '').sub('roles', '').sub('<@!', '').sub('<@', '').sub('>', '')
-        user = if msg == ''
-                 e.user.id.to_i
-               else
-                 msg.to_i
-               end
-        if user.to_i == 0
-          # When a user name got passed
+        user =  if msg == ''
+                  e.user.id.to_i # No Message Passed
+                elsif msg.to_i == 0
+                  # Autocorrect
 
-          # Pseudo:
-          # Download all server members
-          # AutoCorrect through the list
-          # Set user to the most corresponding ID
+                  user = msg
+                  # When a user name got passed
 
-          # Copy-Paste from AutoCorrect for roles:
-          # max = [0, 111, 'rolename']
-          # e.server.roles.each do |r|
-          # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
-          # end
+                  # Pseudo:
+                  # Download all server members
+                  # AutoCorrect through the list
+                  # Set user to the most corresponding ID
 
-          usrmax = [0, 111, 'username']
-          e.server.members.each do |m|
-            usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
-          end
-          user = usrmax[1]
-        end
+                  # Copy-Paste from AutoCorrect for roles:
+                  # max = [0, 111, 'rolename']
+                  # e.server.roles.each do |r|
+                  # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+                  # end
+
+                  usrmax = [0, 111, 'username']
+                  e.server.members.each do |m|
+                    usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+                  end
+                  usrmax[1]
+                else
+                  msg.to_i
+                end
         counter = 0
         rmsg = []
         r = $db[:"#{user.to_s}"].roles
