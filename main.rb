@@ -286,6 +286,26 @@ boom.message do |e|
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           txt = msg.sub('rolerm ', '').sub('rmrole ', '').sub('removerole ', '').split(' ')
           user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
+          if user.to_i == 0
+            # When a user name got passed
+            
+            # Pseudo:
+            # Download all server members
+            # AutoCorrect through the list
+            # Set user to the most corresponding ID
+
+            # Copy-Paste from AutoCorrect for roles:
+            # max = [0, 111, 'rolename']
+            # e.server.roles.each do |r|
+            # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+            # end
+
+            usrmax = [0, 111, 'username']
+            e.server.members.each do |m|
+              usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+            end
+            user = usrmax[1]
+          end
           role = txt.shift
           max = [0, 111, 'rolename']
           e.server.roles.each do |r|
@@ -360,6 +380,9 @@ boom.message do |e|
       #       user = msg.to_i
       #       e.server.member(user).add_role(e.server.role($dbc[:test]))
       #     end
+
+      ##
+      # Disabled Reminder Feature. Requires rework.
       #     if msg.start_with?('remind')
       #       msg = msg.gsub('remind ', '')
       #       txt = msg.split(' ')
