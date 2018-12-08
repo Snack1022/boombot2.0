@@ -27,9 +27,9 @@ class User
 
   def ctime(input)
     if input == 'perm'
-      return Float::INFINITY
+      Float::INFINITY
     else
-      return input.to_i
+      input.to_i
     end
   end
 
@@ -57,9 +57,7 @@ class User
   # The role name needs to be accurate; BB20 will NOT look for the closest match when unroling (performance reasons)
   def unrole(serverid, name)
     @roles.each do |r|
-      if r[1] == name && r[0] == serverid
-        @roles.delete(r)
-      end
+      @roles.delete(r) if r[1] == name && r[0] == serverid
     end
   end
 
@@ -72,24 +70,22 @@ class User
 
   ##
   # DOC TODO:
-  def roles()
-    # Structure: [serverid, name, time, roleid]
-    return @roles
+  attr_reader :roles
+
+  def uid
+    @userid
   end
 
-  def uid()
-    return @userid
-  end
   ##
   # DOC TODO:
-  def banstatus()
-    return @tempban
+  def banstatus
+    @tempban
   end
 
   ##
   # DOC TODO:
   def warn(msg, serverid)
-    @warnings.push([Time.now.strftime("%d/%m/%Y"), msg, serverid, @warnings.length])
+    @warnings.push([Time.now.strftime('%d/%m/%Y'), msg, serverid, @warnings.length])
   end
 
   ##
@@ -97,20 +93,18 @@ class User
   def getwarns(serverid)
     arr = []
     @warnings.each do |e|
-      if e[2] == serverid
-        arr.push e
-      end
+      arr.push e if e[2] == serverid
     end
-    return arr
+    arr
   end
 
   def undowarn(id)
     begin
       @warnings.delete_at(id)
-    rescue
+    rescue StandardError
       return false
     end
-    return true
+    true
   end
 
   ##
@@ -121,25 +115,23 @@ class User
     newr = []
     update = [[], []]
     @roles.each do |r|
-      if r[2] == 'perm' || r[2] > Time.now.to_i
-        newr.push r
-      end
+      newr.push r if r[2] == 'perm' || r[2] > Time.now.to_i
     end
 
     # Merge roles
     # [serverid, name, time, roleid]
     mr = []
     @roles.each do |r|
-      if mr.any? {|a| a[3] == r[3]}
+      if mr.any? { |a| a[3] == r[3] }
         mr.each do |a|
           # Select Obj
-          if a[3] == r[3]
-            if ctime(r[2]) > ctime(a[2])
-              mr.delete(a)
-              mr.push(r)
-            # No else-Statement required as this will NEVER happen
-            end
-          end
+          next unless a[3] == r[3]
+
+          next unless ctime(r[2]) > ctime(a[2])
+
+          mr.delete(a)
+          mr.push(r)
+          # No else-Statement required as this will NEVER happen
         end
       else
         # Fast-FWD
@@ -168,6 +160,6 @@ class User
       end
     end
 
-    return [requireupdate, @userid, update]
+    [requireupdate, @userid, update]
   end
 end

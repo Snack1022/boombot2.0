@@ -189,26 +189,26 @@ boom.message do |e|
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           msg = msg.sub('permrole ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
           if msg[0].to_i == 0
-            
-              # When a user name got passed
-              
-              # Pseudo:
-              # Download all server members
-              # AutoCorrect through the list
-              # Set user to the most corresponding ID
-  
-              # Copy-Paste from AutoCorrect for roles:
-              # max = [0, 111, 'rolename']
-              # e.server.roles.each do |r|
-              # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
-              # end
-  
-              usrmax = [0, 111, 'username']
-              e.server.members.each do |m|
-                usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
-              end
-              msg[0] = usrmax[1]
-            
+
+            # When a user name got passed
+
+            # Pseudo:
+            # Download all server members
+            # AutoCorrect through the list
+            # Set user to the most corresponding ID
+
+            # Copy-Paste from AutoCorrect for roles:
+            # max = [0, 111, 'rolename']
+            # e.server.roles.each do |r|
+            # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+            # end
+
+            usrmax = [0, 111, 'username']
+            e.server.members.each do |m|
+              usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+            end
+            msg[0] = usrmax[1]
+
           end
           max = [0, 111, 'rolename']
           e.server.roles.each do |r|
@@ -239,7 +239,7 @@ boom.message do |e|
 
           if msg[0].to_i == 0
             # When a user name got passed
-            
+
             # Pseudo:
             # Download all server members
             # AutoCorrect through the list
@@ -275,24 +275,24 @@ boom.message do |e|
                  msg.to_i
                end
         if user.to_i == 0
-                # When a user name got passed
-                
-                # Pseudo:
-                # Download all server members
-                # AutoCorrect through the list
-                # Set user to the most corresponding ID
-    
-                # Copy-Paste from AutoCorrect for roles:
-                # max = [0, 111, 'rolename']
-                # e.server.roles.each do |r|
-                # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
-                # end
-    
-                usrmax = [0, 111, 'username']
-                e.server.members.each do |m|
-                  usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
-                end
-                user = usrmax[1]
+          # When a user name got passed
+
+          # Pseudo:
+          # Download all server members
+          # AutoCorrect through the list
+          # Set user to the most corresponding ID
+
+          # Copy-Paste from AutoCorrect for roles:
+          # max = [0, 111, 'rolename']
+          # e.server.roles.each do |r|
+          # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+          # end
+
+          usrmax = [0, 111, 'username']
+          e.server.members.each do |m|
+            usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+          end
+          user = usrmax[1]
         end
         counter = 0
         rmsg = []
@@ -335,7 +335,7 @@ boom.message do |e|
           user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
           if user.to_i == 0
             # When a user name got passed
-            
+
             # Pseudo:
             # Download all server members
             # AutoCorrect through the list
@@ -370,10 +370,10 @@ boom.message do |e|
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           txt = msg.sub('rolerm ', '').sub('rmrole ', '').sub('removerole ', '').split(' ')
           user = txt.shift.sub('<@!', '').sub('<@', '').sub('>', '')
-          
+
           if user.to_i == 0
             # When a user name got passed
-            
+
             # Pseudo:
             # Download all server members
             # AutoCorrect through the list
@@ -434,8 +434,8 @@ boom.message do |e|
           else
             $games = [msg]
           end
-         File.open('games.txt', 'w') {|f| $games.each {|d| f.puts d}}
-          e.channel.send_embed('', constructembed('BoomBot2.0 | SetGame', '00ff00', "The playing games list has been updated! It does now consist of the following:\n`#{YAML.dump $games}`",e))
+          File.open('games.txt', 'w') { |f| $games.each { |d| f.puts d } }
+          e.channel.send_embed('', constructembed('BoomBot2.0 | SetGame', '00ff00', "The playing games list has been updated! It does now consist of the following:\n`#{YAML.dump $games}`", e))
         else
           e.respond "**PERMISSION ERROR!**\n\nI'm sorry, #{e.user.mention}, but you don't seem to be permitted to use recovery commands!"
         end
@@ -450,33 +450,31 @@ boom.message do |e|
           user = e.user.id
         else
           user = msg
-            # When a user name got passed
-            
-            # Pseudo:
-            # Download all server members
-            # AutoCorrect through the list
-            # Set user to the most corresponding ID
+          # When a user name got passed
 
-            # Copy-Paste from AutoCorrect for roles:
-            # max = [0, 111, 'rolename']
-            # e.server.roles.each do |r|
-            # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
-            # end
+          # Pseudo:
+          # Download all server members
+          # AutoCorrect through the list
+          # Set user to the most corresponding ID
 
-            usrmax = [0, 111, 'username']
-            e.server.members.each do |m|
-              usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
-            end
-            user = usrmax[1]
-          
+          # Copy-Paste from AutoCorrect for roles:
+          # max = [0, 111, 'rolename']
+          # e.server.roles.each do |r|
+          # max = [r.name.similar(role), r.id, r.name] if r.name.similar(role) > max[0]
+          # end
+
+          usrmax = [0, 111, 'username']
+          e.server.members.each do |m|
+            usrmax = [m.display_name.similar(user), m.id, m.display_name] if m.display_name.similar(user) > usrmax[0]
+          end
+          user = usrmax[1]
+
         end
 
         $db[:"#{user.to_s}"].roles.each do |dbr|
-          if dbr[0] == e.server.id
-            e.server.member(e.user.id).add_role(dbr[3])
-          end
+          e.server.member(e.user.id).add_role(dbr[3]) if dbr[0] == e.server.id
         end
-        e.channel.send_embed('', constructembed('BoomBot2.0 | Re-assign roles', '00ff00', "Re-Assigning the roles of <@#{user.to_s}> was successful!" , e))
+        e.channel.send_embed('', constructembed('BoomBot2.0 | Re-assign roles', '00ff00', "Re-Assigning the roles of <@#{user}> was successful!", e))
         msg = 'nil'
       end
       # # Created for role assignment test
@@ -545,68 +543,67 @@ boom.message(start_with: 'brgrabroles') do |e|
 end
 
 boom.ready do
-  
-    #runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
-    loops = 0
-    loop do
-      begin
-      loops += 1
-      12.times do
-        boom.game = $games.sample
-        #10.times { runbar.increment; sleep 1 }
-        10.times {sleep 1}
-      end
+  # runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
+  loops = 0
+  loop do
+    begin
+    loops += 1
+    12.times do
+      boom.game = $games.sample
+      # 10.times { runbar.increment; sleep 1 }
+      10.times { sleep 1 }
+    end
 
-      puts
-      puts 'Updating...'
-      uupdate = []
-      $db.each do |k, v|
-        a = v.update
-        uupdate.push(a) if a[0] != false
-      end
-      puts YAML.dump(uupdate)
-      uupdate.each do |g|
-        userid = g[1]
-        g[2].each do |r|
-          next if r == []
+    puts
+    puts 'Updating...'
+    uupdate = []
+    $db.each do |_k, v|
+      a = v.update
+      uupdate.push(a) if a[0] != false
+    end
+    puts YAML.dump(uupdate)
+    uupdate.each do |g|
+      userid = g[1]
+      g[2].each do |r|
+        next if r == []
 
-          r.each do |l|
-            serverid = l[0]
-            roleid = l[3]
-            puts "DEBUG: RM #{roleid} on #{serverid} from #{userid}"
-            boom.server(serverid).member(userid).remove_role(roleid)
-          end
+        r.each do |l|
+          serverid = l[0]
+          roleid = l[3]
+          puts "DEBUG: RM #{roleid} on #{serverid} from #{userid}"
+          boom.server(serverid).member(userid).remove_role(roleid)
         end
       end
+    end
 
-      puts
-      print 'Running reminder tasks...'
+    puts
+    print 'Running reminder tasks...'
 
-      $reminders.each do |r|
-        # Formatting: [Time, e.channel.id, Message]
-        next unless r[0] < Time.now
+    $reminders.each do |r|
+      # Formatting: [Time, e.channel.id, Message]
+      next unless r[0] < Time.now
 
-        puts "#{r} triggered!"
-        boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
-        $reminders.delete(r)
-      end
+      puts "#{r} triggered!"
+      boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
+      $reminders.delete(r)
+    end
 
-      puts
-      print 'Saving'
-      File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
-      File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
-      puts '... Sucess!'
+    puts
+    print 'Saving'
+    File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
+    File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
+    puts '... Sucess!'
 
-      if loops > 180
-        puts 'Attempting to reassign roles to everyone...'
-        $db.each do |k, v|
-          v.roles().each do |vrole|
-            boom.server(vrole[0]).member(v.uid()).add_role(vrole[3])
-          end
+    if loops > 180
+      puts 'Attempting to reassign roles to everyone...'
+      $db.each do |_k, v|
+        v.roles.each do |vrole|
+          boom.server(vrole[0]).member(v.uid).add_role(vrole[3])
         end
-        puts 'Re-assigned roles!'
-        loops = 0
       end
+      puts 'Re-assigned roles!'
+      loops = 0
+    end
     rescue StandardError => boomerror
       msg = []
       boomerror.backtrace.each do |msgp|
@@ -617,7 +614,7 @@ boom.ready do
           ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
         end
       end
-    end
+  end
   end
 end
 
@@ -628,11 +625,8 @@ boom.member_join do |e|
     end
 
     $db[:"#{e.user.id.to_s}"].roles.each do |dbr|
-      if dbr[0] == e.server.id
-        e.server.member(e.user.id).add_role(dbr[3])
-      end
+      e.server.member(e.user.id).add_role(dbr[3]) if dbr[0] == e.server.id
     end
-
   rescue StandardError => boomerror
     msg = []
     boomerror.backtrace.each do |msgp|
