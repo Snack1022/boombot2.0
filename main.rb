@@ -547,79 +547,7 @@ boom.message(start_with: 'brgrabroles') do |e|
 end
 
 boom.ready do
-  # runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
-  loops = 0
-  loop do
-    begin
-    loops += 1
-    12.times do
-      boom.game = $games.sample
-      # 10.times { runbar.increment; sleep 1 }
-      10.times { sleep 1 }
-    end
-
-    puts
-    puts 'Updating...'
-    uupdate = []
-    $db.each do |_k, v|
-      a = v.update
-      uupdate.push(a) if a[0] != false
-    end
-    puts YAML.dump(uupdate)
-    uupdate.each do |g|
-      userid = g[1]
-      g[2].each do |r|
-        next if r == []
-
-        r.each do |l|
-          serverid = l[0]
-          roleid = l[3]
-          puts "DEBUG: RM #{roleid} on #{serverid} from #{userid}"
-          boom.server(serverid).member(userid).remove_role(roleid)
-        end
-      end
-    end
-
-    puts
-    print 'Running reminder tasks...'
-
-    $reminders.each do |r|
-      # Formatting: [Time, e.channel.id, Message]
-      next unless r[0] < Time.now
-
-      puts "#{r} triggered!"
-      boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
-      $reminders.delete(r)
-    end
-
-    puts
-    print 'Saving'
-    File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
-    File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
-    puts '... Sucess!'
-
-    if loops > 180
-      puts 'Attempting to reassign roles to everyone...'
-      $db.each do |_k, v|
-        v.roles.each do |vrole|
-          boom.server(vrole[0]).member(v.uid).add_role(vrole[3])
-        end
-      end
-      puts 'Re-assigned roles!'
-      loops = 0
-    end
-    rescue StandardError => boomerror
-      msg = []
-      boomerror.backtrace.each do |msgp|
-        msg.push "At: #{msgp}"
-      end
-      boom.server(489_866_634_849_157_120).channels.each do |ch|
-        if ch.id == 516_194_712_248_385_546
-          ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
-        end
-      end
-  end
-  end
+puts "Connection successfully established! Let's get this bread!"
 end
 
 boom.member_join do |e|
@@ -644,4 +572,84 @@ boom.member_join do |e|
   end
 end
 
-boom.run
+boom.run :async
+
+sleep 5
+puts "Backend is now active."
+# runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
+loops = 0
+loop do
+  begin
+  loops += 1
+  12.times do
+    begin
+      boom.game = $games.sample
+    rescue
+      puts "#{Time.now}) Failed updating game status. Connection seems to have been lost..."
+    end
+    # 10.times { runbar.increment; sleep 1 }
+    sleep 10
+  end
+
+  puts
+  puts 'Updating...'
+  uupdate = []
+  $db.each do |_k, v|
+    a = v.update
+    uupdate.push(a) if a[0] != false
+  end
+  puts YAML.dump(uupdate)
+  uupdate.each do |g|
+    userid = g[1]
+    g[2].each do |r|
+      next if r == []
+
+      r.each do |l|
+        serverid = l[0]
+        roleid = l[3]
+        puts "DEBUG: RM #{roleid} on #{serverid} from #{userid}"
+        boom.server(serverid).member(userid).remove_role(roleid)
+      end
+    end
+  end
+
+  puts
+  print 'Running reminder tasks...'
+
+  $reminders.each do |r|
+    # Formatting: [Time, e.channel.id, Message]
+    next unless r[0] < Time.now
+
+    puts "#{r} triggered!"
+    boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
+    $reminders.delete(r)
+  end
+
+  puts
+  print 'Saving'
+  File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
+  File.open('reminders.yml', 'w') { |f| f.puts YAML.dump $reminders }
+  puts '... Sucess!'
+
+  if loops > 180
+    puts 'Attempting to reassign roles to everyone...'
+    $db.each do |_k, v|
+      v.roles.each do |vrole|
+        boom.server(vrole[0]).member(v.uid).add_role(vrole[3])
+      end
+    end
+    puts 'Re-assigned roles!'
+    loops = 0
+  end
+  rescue StandardError => boomerror
+    msg = []
+    boomerror.backtrace.each do |msgp|
+      msg.push "At: #{msgp}"
+    end
+    boom.server(489_866_634_849_157_120).channels.each do |ch|
+      if ch.id == 516_194_712_248_385_546
+        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
+      end
+    end
+end
+end
