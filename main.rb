@@ -600,15 +600,27 @@ loop do
   end
   puts YAML.dump(uupdate)
   uupdate.each do |g|
-    userid = g[1]
-    g[2].each do |r|
-      next if r == []
+    begin
+      userid = g[1]
+      g[2].each do |r|
+        next if r == []
 
-      r.each do |l|
-        serverid = l[0]
-        roleid = l[3]
-        puts "DEBUG: RM #{roleid} on #{serverid} from #{userid}"
-        boom.server(serverid).member(userid).remove_role(roleid)
+        r.each do |l|
+          serverid = l[0]
+          roleid = l[3]
+          puts "DEBUG: RM #{roleid} on #{serverid} from #{userid}"
+          boom.server(serverid).member(userid).remove_role(roleid)
+        end
+      end
+    rescue => err
+      msg = []
+      err.backtrace.each do |msgp|
+        msg.push "At: #{msgp}"
+      end
+      boom.server(489_866_634_849_157_120).channels.each do |ch|
+        if ch.id == 516_194_712_248_385_546
+          ch.send_embed('', constructembed('Update error!', 'ff0000', "Updating an user failed: ```md\n#{err.message}```Backtrace: ```md\n#{msg.join("\n")}```\nObj:```md#{YAML.dump g}```"))
+        end
       end
     end
   end
