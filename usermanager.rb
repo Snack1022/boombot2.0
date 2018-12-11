@@ -112,12 +112,7 @@ class User
   # Updates the userdata. Returns true and list of changes if userdata needs to be updated on server.
   def update
     requireupdate = false
-    # Check Roles1
-    newr = []
     update = [[], []]
-    @roles.each do |r|
-      newr.push r if r[2] == 'perm' || r[2] > Time.now.to_i
-    end
 
     # Merge roles
     # [serverid, name, time, roleid]
@@ -127,7 +122,7 @@ class User
         mr.each do |a|
           # Select Obj
           next unless a[3] == r[3]
-          next unless ctime(r[2]) > ctime(a[2])
+          next unless self.ctime(r[2]) > self.ctime(a[2])
 
           mr.delete(a)
           mr.push(r)
@@ -142,14 +137,12 @@ class User
 
     # Update only contains 'remove'-instructions.
     @roles.each do |r|
-      if ctime(r[2]) < Time.now.to_i
+      if self.ctime(r[2]) < Time.now.to_i
         update[0].push(r)
         @roles_rm.push(r)
+        requireupdate = true
       end
     end
-
-    # Update database
-    @roles = newr
 
     # Check bans
     @tempban.each do |t|
@@ -164,10 +157,12 @@ class User
   end
 
   def update!
-    @roles.each.dup do |r|
+    a = @roles.dup
+    a.each do |r|
       if @roles_rm.any?{|rm| r == rm }
         @roles.delete(r)
       end
     end
   end
+
 end
