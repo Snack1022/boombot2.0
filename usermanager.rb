@@ -23,6 +23,7 @@ class User
     @tempban = []
     @lastupdatestat = [@roles, @tempban]
     @warnings = []
+    @roles_rm = []
   end
 
   def ctime(input)
@@ -48,7 +49,7 @@ class User
   #
   # Stalemate resolval will be implemented on BB20's side.
   def temprole(serverid, name, iDuration, roleid)
-    iDuration = iDuration * 3600 + Time.now.to_i
+    iDuration = iDuration * 5 + Time.now.to_i
     @roles.push([serverid, name, iDuration, roleid])
   end
 
@@ -111,7 +112,7 @@ class User
   # Updates the userdata. Returns true and list of changes if userdata needs to be updated on server.
   def update
     requireupdate = false
-    # Check Roles
+    # Check Roles1
     newr = []
     update = [[], []]
     @roles.each do |r|
@@ -126,7 +127,6 @@ class User
         mr.each do |a|
           # Select Obj
           next unless a[3] == r[3]
-
           next unless ctime(r[2]) > ctime(a[2])
 
           mr.delete(a)
@@ -144,7 +144,7 @@ class User
     @roles.each do |r|
       if ctime(r[2]) < Time.now.to_i
         update[0].push(r)
-        @roles.delete(r)
+        @roles_rm.push(r)
       end
     end
 
@@ -161,5 +161,13 @@ class User
     end
 
     [requireupdate, @userid, update]
+  end
+
+  def update!
+    @roles.each.dup do |r|
+      if @roles_rm.any?{|rm| r == rm }
+        @roles.delete(r)
+      end
+    end
   end
 end

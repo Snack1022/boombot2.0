@@ -514,8 +514,15 @@ boom.message do |e|
       #       $reminders.push([target, e.channel.id, txt.join(' ')])
       #       puts "DEBUG: $reminders = #{$reminders}"
       #     end
+      if msg.start_with?('causeErrorFE')
+        raise 'Test error has been created!'
+      end
+
+      if msg.start_with?('causeErrorBE')
+        $backenderror = 1
+      end
     end
-  rescue StandardError => boomerror
+  rescue => boomerror
     msg = []
     boomerror.backtrace.each do |msgp|
       msg.push "At: #{msgp}"
@@ -559,7 +566,7 @@ boom.member_join do |e|
     $db[:"#{e.user.id.to_s}"].roles.each do |dbr|
       e.server.member(e.user.id).add_role(dbr[3]) if dbr[0] == e.server.id
     end
-  rescue StandardError => boomerror
+  rescue => boomerror
     msg = []
     boomerror.backtrace.each do |msgp|
       msg.push "At: #{msgp}"
@@ -578,31 +585,38 @@ sleep 5
 puts "Backend is now active."
 # runbar = ProgressBar.create title: 'Running!', total: nil, format: '%t |%b>>%i<<| %a'
 loops = 0
+$backenderror = 0
+errstate = 0
 loop do
   begin
+    errstate = 'Game Loop...'
+  if $backenderror == 1
+    $backenderror = 0
+    raise 'Yikes! Test Backend Error!'
+  end
+
   loops += 1
-  12.times do
-    begin
-      boom.game = $games.sample
-    rescue
-      puts "#{Time.now}) Failed updating game status. Connection seems to have been lost..."
-    end
+  1.times do
+    errstate = 'Setting game...'
+    boom.game = $games.sample
     # 10.times { runbar.increment; sleep 1 }
     sleep 10
   end
 
   puts
   puts 'Updating...'
+  errstate = 'Updating Database'
   uupdate = []
   $db.each do |_k, v|
     a = v.update
     uupdate.push(a) if a[0] != false
   end
   puts YAML.dump(uupdate)
+  errstate = 'Updating each user...'
   uupdate.each do |g|
-    begin
       userid = g[1]
       g[2].each do |r|
+        errstate = "Updating #{YAML.dump g}"
         next if r == []
 
         r.each do |l|
@@ -612,19 +626,12 @@ loop do
           boom.server(serverid).member(userid).remove_role(roleid)
         end
       end
-    rescue => err
-      msg = []
-      err.backtrace.each do |msgp|
-        msg.push "At: #{msgp}"
-      end
-      boom.server(489_866_634_849_157_120).channels.each do |ch|
-        if ch.id == 516_194_712_248_385_546
-          ch.send_embed('', constructembed('Update error!', 'ff0000', "Updating an user failed: ```md\n#{err.message}```Backtrace: ```md\n#{msg.join("\n")}```\nObj:```md#{YAML.dump g}```"))
-        end
-      end
-    end
   end
 
+  # If we get here, there were no errors during the updating process
+  $db.each { |_k, v| v.update! }
+
+  errstate = 'Reminding you of stuff...'
   puts
   print 'Running reminder tasks...'
 
@@ -636,7 +643,7 @@ loop do
     boom.channel(r[1]).send_message("**REMINDER:** Hey there! A reminder has been set for #{r[0].strftime('%D, %r')}, which has just been acked: \n#{r[2]}")
     $reminders.delete(r)
   end
-
+  errstate = 'Saving...'
   puts
   print 'Saving'
   File.open('userdb.yml', 'w') { |f| f.puts YAML.dump $db }
@@ -653,15 +660,15 @@ loop do
     puts 'Re-assigned roles!'
     loops = 0
   end
-  rescue StandardError => boomerror
+  rescue => boomerror
     msg = []
     boomerror.backtrace.each do |msgp|
       msg.push "At: #{msgp}"
     end
     boom.server(489_866_634_849_157_120).channels.each do |ch|
       if ch.id == 516_194_712_248_385_546
-        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}```"))
+        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}``` Errstate = #{errstate.to_s}"))
       end
     end
-end
+  end
 end
