@@ -97,6 +97,7 @@ boom.message do |e|
         msg = 'nil'
       end
 
+      =begin
       if msg.start_with?('rmwarn')
         msg = msg.sub('rmwarn <@', '').sub('>', '')
         msg = msg.split(' ')
@@ -156,7 +157,7 @@ boom.message do |e|
         end
         msg = 'nil'
       end
-
+      =end
       if msg.start_with?('tempban')
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           msg = msg.sub('tempban ', '')
@@ -211,6 +212,9 @@ boom.message do |e|
             msg[0] = usrmax[1]
 
           end
+
+          $db[:"#{msg[0].to_s}"] = User.new(msg[0].to_i) if $db[:"#{msg[0].to_s}"].nil?
+
           max = [0, 111, 'rolename']
           e.server.roles.each do |r|
             max = [r.name.similar(msg[1]), r.id, r.name] if r.name.similar(msg[1]) > max[0]
@@ -259,7 +263,7 @@ boom.message do |e|
             end
             msg[0] = usrmax[1]
           end
-
+          $db[:"#{msg[0].to_s}"] = User.new(msg[0].to_i) if $db[:"#{msg[0].to_s}"].nil?
           $db[:"#{msg[0].to_s}"].temprole(e.server.id, max[2], time, max[1])
           e.server.member(msg[0].to_i).add_role(e.server.role(max[1].to_i))
           e.channel.send_embed('', constructembed('BoomBot2.0 | temprole', '00ff00', "Assigned role #{max[2]} to <@#{msg[0]}> for #{time / 24} days and #{time % 24} hours!", e))
@@ -300,6 +304,7 @@ boom.message do |e|
                 end
         counter = 0
         rmsg = []
+        $db[:"#{user.to_s}"] = User.new(user.to_i) if $db[:"#{user.to_s}"].nil?
         r = $db[:"#{user.to_s}"].roles
         if r.none? { |role| role[0] == e.server.id }
           rmsg.push("<@#{user}> does not have any staged roles.")
@@ -357,6 +362,7 @@ boom.message do |e|
             end
             user = usrmax[1]
           end
+          $db[:"#{user.to_s}"] = User.new(user.to_i) if $db[:"#{user.to_s}"].nil?
           role = txt.shift
           max = [0, 111, 'rolename']
           e.server.roles.each do |r|
@@ -395,6 +401,8 @@ boom.message do |e|
             end
             user = usrmax[1]
           end
+
+          $db[:"#{user.to_s}"] = User.new(user.to_i) if $db[:"#{user.to_s}"].nil?
           role = txt.shift
           max = [0, 111, 'rolename']
           e.server.roles.each do |r|
@@ -474,6 +482,7 @@ boom.message do |e|
           user = usrmax[1]
 
         end
+        $db[:"#{user.to_s}"] = User.new(user.to_i) if $db[:"#{user.to_s}"].nil?
 
         $db[:"#{user.to_s}"].roles.each do |dbr|
           e.server.member(e.user.id).add_role(dbr[3]) if dbr[0] == e.server.id
