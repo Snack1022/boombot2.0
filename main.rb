@@ -97,7 +97,7 @@ boom.message do |e|
         msg = 'nil'
       end
 
-      =begin
+=begin
       if msg.start_with?('rmwarn')
         msg = msg.sub('rmwarn <@', '').sub('>', '')
         msg = msg.split(' ')
@@ -157,7 +157,7 @@ boom.message do |e|
         end
         msg = 'nil'
       end
-      =end
+
       if msg.start_with?('tempban')
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
           msg = msg.sub('tempban ', '')
@@ -185,6 +185,7 @@ boom.message do |e|
         end
         msg = 'nil'
       end
+=end
 
       if msg.start_with?('permrole')
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
