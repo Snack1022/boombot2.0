@@ -97,95 +97,93 @@ boom.message do |e|
         msg = 'nil'
       end
 
-=begin
-      if msg.start_with?('rmwarn')
-        msg = msg.sub('rmwarn <@', '').sub('>', '')
-        msg = msg.split(' ')
-        userID = msg[0].to_i
-        warnID = msg[1].to_i
-        if $db[:"#{userID.to_s}"].undowarn(warnID) == true
-          e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', '00ff00', "The warning has been successfully removed from <@#{userID}>!", e))
-        else
-          e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', 'ff0000', "ERROR: OutOfIndexException: <@#{userID}> does not have a warning on this index!", e))
-        end
-        msg = 'nil'
-      end
-
-      if msg.start_with?('warnlist')
-        msg = msg.sub('warnlist ', '').sub('<@!', '').sub('<@', '').sub('>', '').to_i
-
-        uWarns = $db[:"#{msg}"].getwarns(e.server.id)
-        if uWarns.empty?
-          e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', 'No warns on record. All good here :slight_smile:', e))
-        else
-          # TODO: Prevent overload!
-          uWarnsProc = []
-          (1..uWarns.length).each do |i|
-            uWarnsProc.push("#{uWarns[(i - 1)][3]}): #{uWarns[(i - 1)][0]}: #{uWarns[(i - 1)][1]}")
-          end
-          e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', "Total warns on record: #{uWarns.length}\n\n#{uWarnsProc.join("\n")}", e))
-        end
-
-        msg = 'nil'
-      end
-
-      if msg.start_with?('warn')
-        msg = msg.sub('warn ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
-        warnusr = msg[0]
-        msg.delete_at(0) # Can't be included into code; returns value which should be voided
-        warnmsg = msg.join(' ')
-        $db[:"#{warnusr}"].warn(warnmsg, e.server.id)
-        e.channel.send_embed('', constructembed("BoomBot2.0 | Warned #{warnusr}!", '00ff00', 'User has been warned.', e))
-        msg = 'nil'
-      end
-
-      if msg.start_with?('setup')
-
-        if $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
-          msg = msg.sub('setup ', '')
-          a = msg.split(' ')
-
-          $dbc[:"#{a[0]}"] = a[1]
-          rm = e.respond("**CONFIG:** Populated database element #{a[0]} with value #{a[1]}! Saving...")
-          sleep 3
-          File.open('configdb.yml', 'w') { |f| f.print YAML.dump $dbc }
-          rm.edit('**CONFIGDB UPDATED!**')
-          sleep 5
-          rm.delete
-        else
-          e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
-        end
-        msg = 'nil'
-      end
-
-      if msg.start_with?('tempban')
-        if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-          msg = msg.sub('tempban ', '')
-          a = msg.split(' ')
-          bandur = if a[0].include?('h')
-                     Time.now + a[0].to_i
-                   else
-                     Time.now + (a[0].to_i * 24)
-                   end
-          banusr = a[1].sub('<@!', '').sub('<@', '').sub('>', '')
-          e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: UNTIL UNIX #{bandur.to_s * 3600}"
-        else
-          e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
-        end
-        msg = 'nil'
-      end
-
-      if msg.start_with?('permban')
-        if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
-          msg = msg.sub('permban ', '')
-          banusr = msg.sub('<@!', '').sub('<@', '').sub('>', '')
-          e.respond "TICKING RESPONSE: PERMABAN FOR #{banusr}"
-        else
-          e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
-        end
-        msg = 'nil'
-      end
-=end
+      #       if msg.start_with?('rmwarn')
+      #         msg = msg.sub('rmwarn <@', '').sub('>', '')
+      #         msg = msg.split(' ')
+      #         userID = msg[0].to_i
+      #         warnID = msg[1].to_i
+      #         if $db[:"#{userID.to_s}"].undowarn(warnID) == true
+      #           e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', '00ff00', "The warning has been successfully removed from <@#{userID}>!", e))
+      #         else
+      #           e.channel.send_embed('', constructembed('BoomBot2.0 | Remove Warning', 'ff0000', "ERROR: OutOfIndexException: <@#{userID}> does not have a warning on this index!", e))
+      #         end
+      #         msg = 'nil'
+      #       end
+      #
+      #       if msg.start_with?('warnlist')
+      #         msg = msg.sub('warnlist ', '').sub('<@!', '').sub('<@', '').sub('>', '').to_i
+      #
+      #         uWarns = $db[:"#{msg}"].getwarns(e.server.id)
+      #         if uWarns.empty?
+      #           e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', 'No warns on record. All good here :slight_smile:', e))
+      #         else
+      #           # TODO: Prevent overload!
+      #           uWarnsProc = []
+      #           (1..uWarns.length).each do |i|
+      #             uWarnsProc.push("#{uWarns[(i - 1)][3]}): #{uWarns[(i - 1)][0]}: #{uWarns[(i - 1)][1]}")
+      #           end
+      #           e.channel.send_embed('', constructembed("BoomBot2.0 | Warns for #{msg}", '00ff00', "Total warns on record: #{uWarns.length}\n\n#{uWarnsProc.join("\n")}", e))
+      #         end
+      #
+      #         msg = 'nil'
+      #       end
+      #
+      #       if msg.start_with?('warn')
+      #         msg = msg.sub('warn ', '').sub('<@!', '').sub('<@', '').sub('>', '').split(' ')
+      #         warnusr = msg[0]
+      #         msg.delete_at(0) # Can't be included into code; returns value which should be voided
+      #         warnmsg = msg.join(' ')
+      #         $db[:"#{warnusr}"].warn(warnmsg, e.server.id)
+      #         e.channel.send_embed('', constructembed("BoomBot2.0 | Warned #{warnusr}!", '00ff00', 'User has been warned.', e))
+      #         msg = 'nil'
+      #       end
+      #
+      #       if msg.start_with?('setup')
+      #
+      #         if $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
+      #           msg = msg.sub('setup ', '')
+      #           a = msg.split(' ')
+      #
+      #           $dbc[:"#{a[0]}"] = a[1]
+      #           rm = e.respond("**CONFIG:** Populated database element #{a[0]} with value #{a[1]}! Saving...")
+      #           sleep 3
+      #           File.open('configdb.yml', 'w') { |f| f.print YAML.dump $dbc }
+      #           rm.edit('**CONFIGDB UPDATED!**')
+      #           sleep 5
+      #           rm.delete
+      #         else
+      #           e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
+      #         end
+      #         msg = 'nil'
+      #       end
+      #
+      #       if msg.start_with?('tempban')
+      #         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
+      #           msg = msg.sub('tempban ', '')
+      #           a = msg.split(' ')
+      #           bandur = if a[0].include?('h')
+      #                      Time.now + a[0].to_i
+      #                    else
+      #                      Time.now + (a[0].to_i * 24)
+      #                    end
+      #           banusr = a[1].sub('<@!', '').sub('<@', '').sub('>', '')
+      #           e.respond "TICKING RESPONSE: TIMED BAN FOR #{banusr}; DURATION: UNTIL UNIX #{bandur.to_s * 3600}"
+      #         else
+      #           e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
+      #         end
+      #         msg = 'nil'
+      #       end
+      #
+      #       if msg.start_with?('permban')
+      #         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
+      #           msg = msg.sub('permban ', '')
+      #           banusr = msg.sub('<@!', '').sub('<@', '').sub('>', '')
+      #           e.respond "TICKING RESPONSE: PERMABAN FOR #{banusr}"
+      #         else
+      #           e.channel.send_embed('', constructembed('BoomBot2.0 | NO PERMISSION', 'ff0000', 'You\'re lacking permission to do that. If you believe this is an error, contact `admin@cubuzz.de`.', e))
+      #         end
+      #         msg = 'nil'
+      #       end
 
       if msg.start_with?('permrole')
         if $config[:permitted].any? { |o| e.user.roles.any? { |r| r.id == o.to_i } }
@@ -528,7 +526,7 @@ boom.message do |e|
 
       $backenderror = 1 if msg.start_with?('causeErrorBE')
     end
-  rescue  => boomerror
+  rescue => boomerror
     msg = []
     boomerror.backtrace.each do |msgp|
       msg.push "At: #{msgp}"
@@ -628,7 +626,8 @@ loop do
         r.each do |l|
           serverid = l[0]
           roleid = l[3]
-          puts "DEBUG: RM #{roleid} on #{serverid} from #{userid}"
+          next if boom.member(serverid, userid).nil?
+
           boom.server(serverid).member(userid).remove_role(roleid)
         end
       end
@@ -636,7 +635,6 @@ loop do
 
     # If we get here, there were no errors during the updating process
     $db.each { |_k, v| v.update! }
-
     errstate = 'Reminding you of stuff...'
     puts
     print 'Running reminder tasks...'
@@ -660,27 +658,33 @@ loop do
       puts 'Attempting to reassign roles to everyone...'
       $db.each do |_k, v|
         v.roles.each do |vrole|
+          next if boom.member(vrole[0], v.uid).nil?
+
           boom.server(vrole[0]).member(v.uid).add_role(vrole[3])
         end
       end
       puts 'Re-assigned roles!'
       loops = 0
     end
-  rescue  => boomerror
+  rescue => boomerror
     msg = []
     boomerror.backtrace.each do |msgp|
       msg.push "At: #{msgp}"
     end
     boom.server(489_866_634_849_157_120).channels.each do |ch|
-      if ch.id == 516_194_712_248_385_546
-        case boomerror.message
-        when "A gateway connection is necessary to call this method! You'll have to do it inside any event (e.g. `ready`) or after `bot.run :async`."
-          puts 'Failed updating game. Connection has been lost.'
-        else
-          ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}``` Errstate = #{errstate}"))
-        end
+      next unless ch.id == 516_194_712_248_385_546
+
+      case boomerror.message
+      when "A gateway connection is necessary to call this method! You'll have to do it inside any event (e.g. `ready`) or after `bot.run :async`."
+        puts 'Failed updating game. Connection has been lost.'
+      else
+        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}``` Errstate = #{errstate}"))
+        # puts "ERROR! #{boomerror.message}\n#{msg.join("\n")}"
       end
     end
+    puts 'Retrying... ' if errstate.start_with?('Updating')
+    retry if errstate.start_with?('Updating')
+    puts 'Skipping... '
     next
   end
 end
