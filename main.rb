@@ -673,8 +673,14 @@ loop do
     end
     boom.server(489_866_634_849_157_120).channels.each do |ch|
       if ch.id == 516_194_712_248_385_546
-        ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}``` Errstate = #{errstate}"))
+        case boomerror.message
+        when "A gateway connection is necessary to call this method! You'll have to do it inside any event (e.g. `ready`) or after `bot.run :async`."
+          puts 'Failed updating game. Connection has been lost.'
+        else
+          ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}``` Errstate = #{errstate}"))
+        end
       end
     end
+    next
   end
 end
