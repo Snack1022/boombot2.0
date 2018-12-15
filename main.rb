@@ -664,6 +664,8 @@ loop do
         end
       end
       puts 'Re-assigned roles!'
+      puts 'Backing up...'
+      File.open("backup-#{Time.now.strftime("%d-%m-%Y-%H-%M-%S")}.yml", 'w') {|f| f.puts YAML.dump $db }
       loops = 0
     end
   rescue => boomerror
