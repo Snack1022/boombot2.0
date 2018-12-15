@@ -626,9 +626,12 @@ loop do
         r.each do |l|
           serverid = l[0]
           roleid = l[3]
-          next if boom.member(serverid, userid).nil?
-
-          boom.server(serverid).member(userid).remove_role(roleid)
+          # Seems to get ignored: next if boom.member(serverid, userid).nil?
+          if boom.member(serverid, userid).nil?
+            puts "User #{userid.to_s} has left server #{serverid.to_s}. Skipping..."
+          else
+            boom.server(serverid).member(userid).remove_role(roleid)
+          end
         end
       end
     end
@@ -658,9 +661,11 @@ loop do
       puts 'Attempting to reassign roles to everyone...'
       $db.each do |_k, v|
         v.roles.each do |vrole|
-          next if boom.member(vrole[0], v.uid).nil?
-
-          boom.server(vrole[0]).member(v.uid).add_role(vrole[3])
+          if boom.member(vrole[0], v.uid).nil?
+            puts "User #{v.uid.to_s} has left server #{vrole[0].to_s}. Skipping..."
+          else
+            boom.server(vrole[0]).member(v.uid).add_role(vrole[3])
+          end
         end
       end
       puts 'Re-assigned roles!'
@@ -679,6 +684,10 @@ loop do
       case boomerror.message
       when "A gateway connection is necessary to call this method! You'll have to do it inside any event (e.g. `ready`) or after `bot.run :async`."
         puts 'Failed updating game. Connection has been lost.'
+        errstate = 'resolved'
+      when "404 Not Found"
+        puts "Skipping. 404 Not Found"
+        errstate = 'resolved'
       else
         ch.send_embed('', constructembed('Backend Error!', 'ff0000', "An error has occured in the backend. Here's what happened: ```md\n#{boomerror.message}```Backtrace: ```md\n#{msg.join("\n")}``` Errstate = #{errstate}"))
         # puts "ERROR! #{boomerror.message}\n#{msg.join("\n")}"
