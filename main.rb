@@ -547,6 +547,33 @@ boom.message(start_with: 'brsetprefix ') do |e|
   msg = 'nil'
 end
 
+boom.message(start_with: 'breval') do |e|
+  if $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
+    a = e.message.content.sub('breval', '')
+	a = a.sub(' ', '') if a.start_with?(' ')
+	a = a.sub("\n", '') if a.start_with?("\n")
+	a = a.gsub('```', '') if a.start_with?('```')
+	a = a.sub('rb', '') if a.start_with?('rb')
+	a = a.sub("\n", '') if a.start_with?("\n")
+	ret = ''
+	evc = 0
+	timer = 0
+	# a = code
+    begin
+	  timer = Time.now
+	  ret = eval(a)
+	rescue StandardError => exeption
+	  e.channel.send_embed('', constructembed('BoomBot2.0 - Eval - Error!', 'ff0000', "It seems like an error has occured whilst evaluating your code. `#{exeption.message.gsub('`', "'")}`", e))
+	  evc = 1
+	end
+	timer = Time.now - timer
+	e.channel.send_embed('', constructembed('BoomBot2.0 - Eval - Finished!', '0000ff', "Evaluation of code finished:\nRuntime: `#{timer.to_s} seconds`\nReturned: `#{ret}`", e))
+  else
+    e.respond "**PERMISSION ERROR!**\n\nI'm sorry, #{e.user.mention}, but you don't seem to be permitted to use recovery commands!"
+  end
+  msg = 'nil'
+end
+
 # #Disable for security purposes
 boom.message(start_with: 'brgrabroles') do |e|
   break unless $config[:owner].any? { |o| o.to_i == e.user.id.to_i }
