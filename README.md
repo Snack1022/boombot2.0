@@ -20,7 +20,7 @@ This bot was coded in order to improve the abilities a user has when using Disco
 > Run 'bundle install' in current directory  
 
 * Create a file called 'config.yml' in the bot directory and add the following to it:
-`---
+```---
 :token: <Your Bot Token>
 :clid: <Your Bot Client ID>
 :owner:
@@ -30,6 +30,7 @@ This bot was coded in order to improve the abilities a user has when using Disco
 :permitted:
   - <Role ID 1 of permitted roles list>
   - <Role ID 2 of permitted roles list>
-    (etc.)`
+    (etc.)
+ ```
 
 * Launch the bot from a command line using `ruby ./main.rb`
